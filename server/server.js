@@ -1,11 +1,11 @@
 import dotenv from "dotenv";
 dotenv.config();
-
+import dns from 'dns';
 import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import errorHandler from "./middleware/errorMiddleware.js";
-
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
 import authRoutes from "./routes/authRoutes.js";
 import resourceRoutes from "./routes/resourceRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
