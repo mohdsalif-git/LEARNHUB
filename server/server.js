@@ -16,12 +16,17 @@ import feedbackRoutes from "./routes/feedbackRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 connectDB();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://learnhub-52p5.vercel.app",
+  process.env.CLIENT_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173" || "https://learnhub-52p5.vercel.app/",
+  origin: allowedOrigins,
   credentials: true,
 }));
 
@@ -42,6 +47,11 @@ app.use("/api/admin", adminRoutes);
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`LearnHub server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`LearnHub server running on port ${PORT}`);
+  });
+}
+
+export default app;
