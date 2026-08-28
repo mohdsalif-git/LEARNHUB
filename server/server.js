@@ -20,8 +20,8 @@ const app = express();
 connectDB();
 
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://learnhub-52p5.vercel.app",
+  // "http://localhost:5173",
+  "https://learnhub-woad.vercel.app/",
   process.env.CLIENT_URL
 ].filter(Boolean);
 
