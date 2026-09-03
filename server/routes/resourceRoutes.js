@@ -8,7 +8,7 @@ import {
   getCommunityResources,
   submitCommunityResource,
 } from "../controllers/resourceController.js";
-import { authenticate, authorizeAdmin } from "../middleware/authMiddleware.js";
+import { authenticate, optionalAuthenticate, authorizeAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -18,6 +18,6 @@ router.get("/:id", getResourceById);
 router.post("/", authenticate, authorizeAdmin, createResource);
 router.put("/:id", authenticate, authorizeAdmin, updateResource);
 router.delete("/:id", authenticate, authorizeAdmin, deleteResource);
-router.post("/submit", authenticate, submitCommunityResource);
+router.post("/submit", optionalAuthenticate, submitCommunityResource);
 
 export default router;

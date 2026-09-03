@@ -35,6 +35,16 @@ export default function SupportPage() {
       });
 
       if (res.data.razorpayOrder && res.data.keyId) {
+        if (!window.Razorpay) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://checkout.razorpay.com/v1/checkout.js";
+            script.onload = resolve;
+            script.onerror = () => reject(new Error("Failed to load Razorpay payment gateway"));
+            document.body.appendChild(script);
+          });
+        }
+
         const options = {
           key: res.data.keyId,
           amount: res.data.razorpayOrder.amount,

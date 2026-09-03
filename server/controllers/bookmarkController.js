@@ -5,7 +5,8 @@ const getBookmarks = async (req, res) => {
     const bookmarks = await Bookmark.find({ user: req.user._id })
       .populate("resource")
       .sort({ createdAt: -1 });
-    res.json({ success: true, data: { bookmarks } });
+    const validBookmarks = bookmarks.filter((b) => b.resource != null);
+    res.json({ success: true, data: { bookmarks: validBookmarks } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

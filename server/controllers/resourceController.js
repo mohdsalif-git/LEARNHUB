@@ -1,4 +1,10 @@
+import mongoose from "mongoose";
 import Resource from "../models/Resource.js";
+import Category from "../models/Category.js";
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 const getResources = async (req, res) => {
   try {
@@ -7,14 +13,25 @@ const getResources = async (req, res) => {
     const query = {};
 
     if (search) {
+      const escaped = escapeRegex(search.trim());
       query.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { tags: { $in: [new RegExp(search, "i")] } },
+        { title: { $regex: escaped, $options: "i" } },
+        { description: { $regex: escaped, $options: "i" } },
+        { tags: { $in: [new RegExp(escaped, "i")] } },
       ];
     }
 
-    if (category) query.category = category;
+    if (category) {
+      if (mongoose.Types.ObjectId.isValid(category)) {
+        query.$or = query.$or || [];
+        query.$and = query.$and || [];
+        query.$and.push({
+          $or: [{ categoryId: category }, { category: category }],
+        });
+      } else {
+        query.category = category;
+      }
+    }
     if (level) query.level = level;
     if (platform) query.platform = platform;
     if (featured === "true") query.featured = true;

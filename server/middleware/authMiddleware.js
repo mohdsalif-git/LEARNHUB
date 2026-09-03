@@ -21,6 +21,20 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+const optionalAuthenticate = async (req, res, next) => {
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "learnhub_jwt_secret_change_in_production_2025");
+      req.user = await User.findById(decoded.id).select("-password");
+    } catch {
+      req.user = null;
+    }
+  }
+  next();
+};
+
 const authorizeAdmin = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     next();
@@ -29,4 +43,4 @@ const authorizeAdmin = (req, res, next) => {
   }
 };
 
-export { authenticate, authorizeAdmin };
+export { authenticate, optionalAuthenticate, authorizeAdmin };

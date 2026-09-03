@@ -6,6 +6,9 @@ import { bookmarkService } from "../../services/bookmarkService";
 import { useAuth } from "../../context/AuthContext";
 import { getThumbnail, getPlatformBadgeStyle } from "../../lib/thumbnails";
 import toast from "react-hot-toast";
+import { Button } from "../../components/ui/Button";
+import { Badge } from "../../components/ui/Badge";
+import { EmptyState } from "../../components/ui/StateComponents";
 
 export default function ResourceDetailPage() {
   const { id } = useParams();
@@ -56,8 +59,7 @@ export default function ResourceDetailPage() {
   if (!resource) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6">
-        <h1 className="text-2xl font-bold">Resource not found</h1>
-        <Link to="/search" className="mt-4 inline-block text-sm text-primary hover:underline">Back to search</Link>
+        <EmptyState type="resources" action={{ label: "Back to Search", variant: "outline", href: "/search" }} />
       </div>
     );
   }
@@ -71,20 +73,20 @@ export default function ResourceDetailPage() {
         <ArrowLeft className="h-4 w-4" /> Back to search
       </Link>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
+      <article className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
         {thumbnail && (
           <div className="aspect-video overflow-hidden bg-muted">
-            <img src={thumbnail} alt={resource.title} className="h-full w-full object-cover" />
+            <img src={thumbnail} alt={resource.title} className="h-full w-full object-cover" loading="lazy" />
           </div>
         )}
 
         <div className="p-6">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: platformStyle.bg, color: platformStyle.color }}>
+            <Badge variant="primary" className="text-[10px] font-semibold" style={{ background: platformStyle.bg, color: platformStyle.color, borderColor: platformStyle.color }}>
               {resource.platform}
-            </span>
-            {resource.level && <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">{resource.level}</span>}
-            {resource.duration && <span className="text-xs text-muted-foreground">{resource.duration}</span>}
+            </Badge>
+            {resource.level && <Badge variant="subtle" className="text-[10px] font-medium">{resource.level}</Badge>}
+            {resource.duration && <span className="text-[10px] text-muted-foreground">{resource.duration}</span>}
             {resource.rating > 0 && (
               <span className="inline-flex items-center gap-1 text-xs font-medium">
                 <Star className="h-3 w-3 fill-[color:var(--warning)] text-[color:var(--warning)]" /> {resource.rating}
@@ -98,7 +100,7 @@ export default function ResourceDetailPage() {
           {resource.tags && resource.tags.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-1.5">
               {resource.tags.map((tag) => (
-                <span key={tag} className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">{tag}</span>
+                <Badge key={tag} variant="subtle" className="text-[10px]">{tag}</Badge>
               ))}
             </div>
           )}
@@ -113,15 +115,26 @@ export default function ResourceDetailPage() {
             >
               <ExternalLink className="h-4 w-4" /> Open Resource
             </a>
-            <button onClick={toggleBookmark} className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted">
-              <Bookmark className={`h-4 w-4 ${bookmarked ? "fill-primary text-primary" : ""}`} /> {bookmarked ? "Bookmarked" : "Bookmark"}
-            </button>
-            <button onClick={handleShare} className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-muted">
+            <Button
+              variant="outline"
+              onClick={toggleBookmark}
+              className="gap-2"
+              aria-label={bookmarked ? "Remove bookmark" : "Bookmark"}
+            >
+              <Bookmark className={`h-4 w-4 ${bookmarked ? "fill-primary text-primary" : ""}`} />
+              {bookmarked ? "Bookmarked" : "Bookmark"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleShare}
+              className="gap-2"
+              aria-label="Share"
+            >
               <Share2 className="h-4 w-4" /> Share
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </article>
     </div>
   );
 }

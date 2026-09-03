@@ -1,5 +1,7 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
+import jwt from "jsonwebtoken";
+import moment from "moment";
 
 const registerUser = async (req, res) => {
   try {
@@ -16,11 +18,12 @@ const registerUser = async (req, res) => {
 
     const user = await User.create({ name, email, password });
     const token = generateToken(user._id);
-
+    const expiresAt = moment().add(30, "days").toDate();
+    
     res.status(201).json({
       success: true,
       message: "Registration successful",
-      data: { user, token },
+      data: { user, token, expiresAt },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -50,11 +53,59 @@ const loginUser = async (req, res) => {
     }
 
     const token = generateToken(user._id);
-
+    const expiresAt = moment().add(30, "days").toDate();
+    
     res.json({
       success: true,
       message: "Login successful",
-      data: { user, token },
+      data: { user, token, expiresAt },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const googleAuth = async (req, res) => {
+  try {
+    const { credential, email: reqEmail, name: reqName, avatar: reqAvatar } = req.body;
+    let email = reqEmail;
+    let name = reqName;
+    let avatar = reqAvatar || "";
+
+    if (credential) {
+      try {
+        const decoded = jwt.decode(credential);
+        if (decoded && decoded.email) {
+          email = decoded.email;
+          name = decoded.name || name || "Google User";
+          avatar = decoded.picture || avatar;
+        }
+      } catch {
+        // Continue with direct fields if decode fails
+      }
+    }
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required for Google login" });
+    }
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = await User.create({
+        name: name || email.split("@")[0],
+        email,
+        avatar,
+        provider: "google",
+      });
+    }
+
+    const token = generateToken(user._id);
+    const expiresAt = moment().add(30, "days").toDate();
+
+    res.json({
+      success: true,
+      message: "Google login successful",
+      data: { user, token, expiresAt },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -70,4 +121,4 @@ const getMe = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, getMe };
+export { registerUser, loginUser, googleAuth, getMe };

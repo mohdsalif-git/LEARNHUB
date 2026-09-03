@@ -15,8 +15,22 @@ async function request(endpoint, options = {}) {
     headers,
   });
 
-  const data = await response.json();
+  // Try to parse error response
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    data = { message: "Request failed" };
+  }
+
   if (!response.ok) {
+    // Handle token expiry (401) - could auto-logout
+    if (response.status === 401) {
+      localStorage.removeItem("learnhub_token");
+      // Dispatch logout event or notify auth context
+      const event = new Event("auth logout");
+      window.dispatchEvent(event);
+    }
     throw new Error(data.message || "Request failed");
   }
   return data;

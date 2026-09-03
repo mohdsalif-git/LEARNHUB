@@ -5,8 +5,13 @@ import { useAuth } from "../../context/AuthContext";
 import { getThumbnail, getPlatformBadgeStyle } from "../../lib/thumbnails";
 import toast from "react-hot-toast";
 import { bookmarkService } from "../../services/bookmarkService";
+import { Button } from "../../components/ui/Button";
+import { Badge } from "../../components/ui/Badge";
+import { cn } from "../../lib/utils";
 
-export function ResourceCard({ resource, bookmarked = false, onBookmarkToggle }) {
+export function ResourceCard({ resource, bookmarked = false, onBookmarkToggle, variant = "default" }) {
+  if (!resource) return null;
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const thumbnail = getThumbnail(resource.url, resource.thumbnail);
@@ -39,10 +44,15 @@ export function ResourceCard({ resource, bookmarked = false, onBookmarkToggle })
     toast.success("Link copied!");
   }
 
+  const cardClasses = {
+    default: "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)]",
+    compact: "group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md",
+  };
+
   return (
     <Link
       to={`/resources/${resource._id || resource.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)]"
+      className={cardClasses[variant]}
     >
       {thumbnail && (
         <div className="relative aspect-video overflow-hidden bg-muted">
@@ -58,23 +68,20 @@ export function ResourceCard({ resource, bookmarked = false, onBookmarkToggle })
 
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-2 flex items-center gap-2">
-          <span
-            className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
-            style={{ background: platformStyle.bg, color: platformStyle.color }}
-          >
+          <Badge variant="outline" className="text-[10px] font-semibold" style={{ background: platformStyle.bg, color: platformStyle.color, borderColor: platformStyle.color }}>
             {resource.platform}
-          </span>
+          </Badge>
           {resource.level && (
-            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            <Badge variant="subtle" className="text-[10px] font-medium">
               {resource.level}
-            </span>
+            </Badge>
           )}
           {resource.duration && (
             <span className="text-[10px] text-muted-foreground">{resource.duration}</span>
           )}
         </div>
 
-        <h3 className="line-clamp-2 text-sm font-semibold text-foreground group-hover:text-primary">
+        <h3 className="line-clamp-2 text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
           {resource.title}
         </h3>
 
@@ -85,9 +92,9 @@ export function ResourceCard({ resource, bookmarked = false, onBookmarkToggle })
         {resource.tags && resource.tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {resource.tags.slice(0, 3).map((tag) => (
-              <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+              <Badge key={tag} variant="subtle" className="text-[10px]">
                 {tag}
-              </span>
+              </Badge>
             ))}
           </div>
         )}
@@ -101,32 +108,37 @@ export function ResourceCard({ resource, bookmarked = false, onBookmarkToggle })
               </>
             )}
             {resource.verified && (
-              <span className="ml-1 text-[10px] font-medium text-[color:var(--success)]">Verified</span>
+              <Badge variant="success" className="ml-1 text-[10px]">
+                Verified
+              </Badge>
             )}
           </div>
 
           <div className="flex items-center gap-1">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleBookmark}
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-primary"
-              title="Bookmark"
+              className={cn("text-muted-foreground hover:text-primary", bookmarked && "text-primary")}
+              aria-label={bookmarked ? "Remove bookmark" : "Bookmark"}
             >
-              <Bookmark className={`h-3.5 w-3.5 ${bookmarked ? "fill-primary text-primary" : ""}`} />
-            </button>
-            <button
+              <Bookmark className={cn("h-3.5 w-3.5", bookmarked && "fill-primary")} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleShare}
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-primary"
-              title="Share"
+              aria-label="Share"
             >
               <Share2 className="h-3.5 w-3.5" />
-            </button>
+            </Button>
             <a
               href={resource.url}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-primary"
-              title="Open resource"
+              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors"
+              aria-label="Open resource"
             >
               <ExternalLink className="h-3.5 w-3.5" />
             </a>

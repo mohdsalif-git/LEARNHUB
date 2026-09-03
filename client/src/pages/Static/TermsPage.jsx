@@ -7,7 +7,7 @@ export default function TermsPage() {
         <p>By using LearnHub, you agree to these terms.</p>
         <p><strong>Our Service:</strong> LearnHub provides a free, curated directory of learning resources from across the web. We do not host content — we link to existing free resources.</p>
         <p><strong>User Conduct:</strong> You agree not to misuse the platform, submit harmful content, or attempt to compromise security.</p>
-        <p><strong>Content Submissions:</strong> When you submit a resource, you confirm it is free and合法. We reserve the right to reject or remove submissions.</p>
+        <p><strong>Content Submissions:</strong> When you submit a resource, you confirm it is free, legitimate, and compliant with applicable terms. We reserve the right to reject or remove submissions.</p>
         <p><strong>Disclaimer:</strong> LearnHub is provided "as is" without warranties. We are not responsible for external content.</p>
       </div>
     </div>

@@ -18,6 +18,7 @@ const createOrder = async (req, res) => {
       showPublicName: showPublicName || false,
       status: "created",
       paymentGateway: "razorpay",
+      user: req.user?._id || undefined,
     });
 
     let razorpayOrder = null;

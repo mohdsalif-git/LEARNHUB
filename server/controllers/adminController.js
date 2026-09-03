@@ -47,8 +47,29 @@ const getDashboardStats = async (req, res) => {
 
 const getUsers = async (req, res) => {
   try {
-    const users = await User.find().sort({ createdAt: -1 }).select("-password");
-    res.json({ success: true, data: { users } });
+    const { page = 1, limit = 10, search, role, sort = "createdAt", order = "desc" } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const query = {};
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (role) query.role = role;
+
+    const sortOption = { [sort]: order === "asc" ? 1 : -1 };
+
+    const [users, total] = await Promise.all([
+      User.find(query).sort(sortOption).skip(skip).limit(parseInt(limit)).select("-password"),
+      User.countDocuments(query),
+    ]);
+
+    res.json({
+      success: true,
+      data: { users, total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -60,7 +81,7 @@ const updateUserRole = async (req, res) => {
     if (!["user", "admin"].includes(role)) {
       return res.status(400).json({ success: false, message: "Invalid role" });
     }
-    const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true });
+    const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select("-password");
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
@@ -105,8 +126,30 @@ const getSupportRequests = async (req, res) => {
 
 const getAllFeedback = async (req, res) => {
   try {
-    const feedback = await Feedback.find().sort({ createdAt: -1 }).populate("user", "name email");
-    res.json({ success: true, data: { feedback } });
+    const { page = 1, limit = 10, search, status, sort = "createdAt", order = "desc" } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const query = {};
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { message: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (status) query.status = status;
+
+    const sortOption = { [sort]: order === "asc" ? 1 : -1 };
+
+    const [feedback, total] = await Promise.all([
+      Feedback.find(query).sort(sortOption).skip(skip).limit(parseInt(limit)).populate("user", "name email"),
+      Feedback.countDocuments(query),
+    ]);
+
+    res.json({
+      success: true,
+      data: { feedback, total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -40,8 +40,9 @@ export default function SharePage() {
         tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
       });
       setSubmitted(true);
+      toast.success("Resource submitted! It will be reviewed by our team.");
     } catch (err) {
-      toast.error(err.message || "Submission failed");
+      toast.error(err.message || "Submission failed. Please try again later.");
     } finally {
       setLoading(false);
     }

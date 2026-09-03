@@ -1,44 +1,72 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { Toaster } from "react-hot-toast";
-import { useAuth } from "./context/AuthContext";
+import { useAuth as useAuthHook } from "./context/AuthContext";
 import { PageShell } from "./components/layout/PageShell";
+import { AuthProvider } from "./context/AuthContext";
+import { AdminLayout } from "./components/layout/AdminLayout";
+import { Skeleton } from "./components/ui/Skeleton";
 
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/Auth/LoginPage";
-import RegisterPage from "./pages/Auth/RegisterPage";
-import AdminLoginPage from "./pages/Admin/AdminLoginPage";
-import AdminSetupPage from "./pages/Admin/AdminSetupPage";
-import SearchPage from "./pages/Resources/SearchPage";
-import ResourceDetailPage from "./pages/Resources/ResourceDetailPage";
-import CategoriesPage from "./pages/Categories/CategoriesPage";
-import CategoryDetailPage from "./pages/Categories/CategoryDetailPage";
-import BookmarksPage from "./pages/Bookmarks/BookmarksPage";
-import DashboardPage from "./pages/Dashboard/DashboardPage";
-import SharePage from "./pages/Resources/SharePage";
-import SupportPage from "./pages/Static/SupportPage";
-import DonatePage from "./pages/Static/DonatePage";
-import PaymentSuccessPage from "./pages/Payments/PaymentSuccessPage";
-import PaymentFailedPage from "./pages/Payments/PaymentFailedPage";
-import FeedbackPage from "./pages/Static/FeedbackPage";
-import ContactPage from "./pages/Static/ContactPage";
-import AboutPage from "./pages/Static/AboutPage";
-import TeamPage from "./pages/Static/TeamPage";
-import PrivacyPage from "./pages/Static/PrivacyPage";
-import TermsPage from "./pages/Static/TermsPage";
-import RefundPolicyPage from "./pages/Static/RefundPolicyPage";
-import AdminDashboardPage from "./pages/Admin/AdminDashboardPage";
-import AdminCategoriesPage from "./pages/Admin/AdminCategoriesPage";
-import AdminPaymentsPage from "./pages/Admin/AdminPaymentsPage";
+// Lazy load pages for code splitting
+const HomePage = lazy(() => import("./pages/HomePage"));
+const AuthPage = lazy(() => import("./pages/Auth/AuthPage"));
+const AdminLoginPage = lazy(() => import("./pages/Admin/AdminLoginPage"));
+const AdminSetupPage = lazy(() => import("./pages/Admin/AdminSetupPage"));
+const SearchPage = lazy(() => import("./pages/Resources/SearchPage"));
+const ResourceDetailPage = lazy(() => import("./pages/Resources/ResourceDetailPage"));
+const CategoriesPage = lazy(() => import("./pages/Categories/CategoriesPage"));
+const CategoryDetailPage = lazy(() => import("./pages/Categories/CategoryDetailPage"));
+const BookmarksPage = lazy(() => import("./pages/Bookmarks/BookmarksPage"));
+const DashboardPage = lazy(() => import("./pages/Dashboard/DashboardPage"));
+const SharePage = lazy(() => import("./pages/Resources/SharePage"));
+const SupportPage = lazy(() => import("./pages/Static/SupportPage"));
+const DonatePage = lazy(() => import("./pages/Static/DonatePage"));
+const PaymentSuccessPage = lazy(() => import("./pages/Payments/PaymentSuccessPage"));
+const PaymentFailedPage = lazy(() => import("./pages/Payments/PaymentFailedPage"));
+const FeedbackPage = lazy(() => import("./pages/Static/FeedbackPage"));
+const ContactPage = lazy(() => import("./pages/Static/ContactPage"));
+const AboutPage = lazy(() => import("./pages/Static/AboutPage"));
+const TeamPage = lazy(() => import("./pages/Static/TeamPage"));
+const PrivacyPage = lazy(() => import("./pages/Static/PrivacyPage"));
+const TermsPage = lazy(() => import("./pages/Static/TermsPage"));
+const RefundPolicyPage = lazy(() => import("./pages/Static/RefundPolicyPage"));
+const AdminDashboardPage = lazy(() => import("./pages/Admin/AdminDashboardPage"));
+const AdminCategoriesPage = lazy(() => import("./pages/Admin/AdminCategoriesPage"));
+const AdminPaymentsPage = lazy(() => import("./pages/Admin/AdminPaymentsPage"));
+const AdminMembersPage = lazy(() => import("./pages/Admin/AdminMembersPage"));
+const AdminFeedbackPage = lazy(() => import("./pages/Admin/AdminFeedbackPage"));
+const AdminResourcesPage = lazy(() => import("./pages/Admin/AdminResourcesPage"));
+
+function LoadingFallback() {
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <div className="space-y-6 animate-fade-in">
+        <Skeleton className="h-8 w-64" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32" />)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PageWithSuspense({ children }) {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      {children}
+    </Suspense>
+  );
+}
 
 function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuthHook();
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
 
 function AdminRoute({ children }) {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin } = useAuthHook();
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/admin/login" replace />;
   if (!isAdmin) return <Navigate to="/" replace />;
@@ -46,7 +74,7 @@ function AdminRoute({ children }) {
 }
 
 function GuestRoute({ children }) {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin } = useAuthHook();
   if (loading) return <LoadingScreen />;
   if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
   if (user) return <Navigate to="/dashboard" replace />;
@@ -64,45 +92,59 @@ function LoadingScreen() {
   );
 }
 
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<PageShell><PageWithSuspense><HomePage /></PageWithSuspense></PageShell>} />
+      <Route path="/about" element={<PageShell><PageWithSuspense><AboutPage /></PageWithSuspense></PageShell>} />
+      <Route path="/team" element={<PageShell><PageWithSuspense><TeamPage /></PageWithSuspense></PageShell>} />
+      <Route path="/contact" element={<PageShell><PageWithSuspense><ContactPage /></PageWithSuspense></PageShell>} />
+      <Route path="/privacy" element={<PageShell><PageWithSuspense><PrivacyPage /></PageWithSuspense></PageShell>} />
+      <Route path="/terms" element={<PageShell><PageWithSuspense><TermsPage /></PageWithSuspense></PageShell>} />
+      <Route path="/refund-policy" element={<PageShell><PageWithSuspense><RefundPolicyPage /></PageWithSuspense></PageShell>} />
+      <Route path="/categories" element={<PageShell><PageWithSuspense><CategoriesPage /></PageWithSuspense></PageShell>} />
+      <Route path="/categories/:slug" element={<PageShell><PageWithSuspense><CategoryDetailPage /></PageWithSuspense></PageShell>} />
+      <Route path="/search" element={<PageShell><PageWithSuspense><SearchPage /></PageWithSuspense></PageShell>} />
+      <Route path="/resources/:id" element={<PageShell><PageWithSuspense><ResourceDetailPage /></PageWithSuspense></PageShell>} />
+      <Route path="/share" element={<PageShell><PageWithSuspense><SharePage /></PageWithSuspense></PageShell>} />
+      <Route path="/feedback" element={<PageShell><PageWithSuspense><FeedbackPage /></PageWithSuspense></PageShell>} />
+      <Route path="/support" element={<PageShell><PageWithSuspense><SupportPage /></PageWithSuspense></PageShell>} />
+      <Route path="/donate" element={<PageShell><PageWithSuspense><DonatePage /></PageWithSuspense></PageShell>} />
+      <Route path="/payment/success" element={<PageShell><PageWithSuspense><PaymentSuccessPage /></PageWithSuspense></PageShell>} />
+      <Route path="/payment/failed" element={<PageShell><PageWithSuspense><PaymentFailedPage /></PageWithSuspense></PageShell>} />
+
+      <Route path="/login" element={<GuestRoute><PageShell><PageWithSuspense><AuthPage /></PageWithSuspense></PageShell></GuestRoute>} />
+      <Route path="/register" element={<Navigate to="/login" replace />} />
+      <Route path="/auth" element={<Navigate to="/login" replace />} />
+
+      <Route path="/bookmarks" element={<ProtectedRoute><PageShell><PageWithSuspense><BookmarksPage /></PageWithSuspense></PageShell></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><PageShell><PageWithSuspense><DashboardPage /></PageWithSuspense></PageShell></ProtectedRoute>} />
+
+      {/* Admin public / setup routes */}
+      <Route path="/admin/login" element={<GuestRoute><PageShell><PageWithSuspense><AdminLoginPage /></PageWithSuspense></PageShell></GuestRoute>} />
+      <Route path="/admin/setup" element={<ProtectedRoute><PageShell><PageWithSuspense><AdminSetupPage /></PageWithSuspense></PageShell></ProtectedRoute>} />
+
+      {/* Admin protected management routes with dedicated layout */}
+      <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="/admin/dashboard" element={<PageWithSuspense><AdminDashboardPage /></PageWithSuspense>} />
+        <Route path="/admin/members" element={<PageWithSuspense><AdminMembersPage /></PageWithSuspense>} />
+        <Route path="/admin/resources" element={<PageWithSuspense><AdminResourcesPage /></PageWithSuspense>} />
+        <Route path="/admin/categories" element={<PageWithSuspense><AdminCategoriesPage /></PageWithSuspense>} />
+        <Route path="/admin/feedback" element={<PageWithSuspense><AdminFeedbackPage /></PageWithSuspense>} />
+        <Route path="/admin/payments" element={<PageWithSuspense><AdminPaymentsPage /></PageWithSuspense>} />
+      </Route>
+
+      <Route path="*" element={<PageShell><NotFoundPage /></PageShell>} />
+    </Routes>
+  );
+}
+
 export default function App() {
   return (
     <>
       <Toaster position="top-right" />
-      <Routes>
-        <Route path="/" element={<PageShell><HomePage /></PageShell>} />
-        <Route path="/about" element={<PageShell><AboutPage /></PageShell>} />
-        <Route path="/team" element={<PageShell><TeamPage /></PageShell>} />
-        <Route path="/contact" element={<PageShell><ContactPage /></PageShell>} />
-        <Route path="/privacy" element={<PageShell><PrivacyPage /></PageShell>} />
-        <Route path="/terms" element={<PageShell><TermsPage /></PageShell>} />
-        <Route path="/refund-policy" element={<PageShell><RefundPolicyPage /></PageShell>} />
-        <Route path="/categories" element={<PageShell><CategoriesPage /></PageShell>} />
-        <Route path="/categories/:slug" element={<PageShell><CategoryDetailPage /></PageShell>} />
-        <Route path="/search" element={<PageShell><SearchPage /></PageShell>} />
-        <Route path="/resources/:id" element={<PageShell><ResourceDetailPage /></PageShell>} />
-        <Route path="/share" element={<PageShell><SharePage /></PageShell>} />
-        <Route path="/feedback" element={<PageShell><FeedbackPage /></PageShell>} />
-        <Route path="/support" element={<PageShell><SupportPage /></PageShell>} />
-        <Route path="/donate" element={<PageShell><DonatePage /></PageShell>} />
-        <Route path="/payment/success" element={<PageShell><PaymentSuccessPage /></PageShell>} />
-        <Route path="/payment/failed" element={<PageShell><PaymentFailedPage /></PageShell>} />
-
-        <Route path="/login" element={<GuestRoute><PageShell><LoginPage /></PageShell></GuestRoute>} />
-        <Route path="/register" element={<GuestRoute><PageShell><RegisterPage /></PageShell></GuestRoute>} />
-        <Route path="/auth" element={<Navigate to="/login" replace />} />
-
-        <Route path="/bookmarks" element={<ProtectedRoute><PageShell><BookmarksPage /></PageShell></ProtectedRoute>} />
-        <Route path="/dashboard" element={<ProtectedRoute><PageShell><DashboardPage /></PageShell></ProtectedRoute>} />
-
-        <Route path="/admin/login" element={<GuestRoute><PageShell><AdminLoginPage /></PageShell></GuestRoute>} />
-        <Route path="/admin/setup" element={<ProtectedRoute><PageShell><AdminSetupPage /></PageShell></ProtectedRoute>} />
-        <Route path="/admin" element={<AdminRoute><PageShell><AdminDashboardPage /></PageShell></AdminRoute>} />
-        <Route path="/admin/dashboard" element={<AdminRoute><PageShell><AdminDashboardPage /></PageShell></AdminRoute>} />
-        <Route path="/admin/categories" element={<AdminRoute><PageShell><AdminCategoriesPage /></PageShell></AdminRoute>} />
-        <Route path="/admin/payments" element={<AdminRoute><PageShell><AdminPaymentsPage /></PageShell></AdminRoute>} />
-
-        <Route path="*" element={<PageShell><NotFoundPage /></PageShell>} />
-      </Routes>
+      <AppRoutes />
     </>
   );
 }
