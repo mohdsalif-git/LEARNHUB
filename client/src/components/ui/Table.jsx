@@ -84,7 +84,7 @@ export const SortableHeader = forwardRef(({ children, onSort, sorted, direction,
       )}
       {!sorted && <span className="h-4 w-4 opacity-30" />}
     </div>
-  />
+  </th>
 ));
 
 SortableHeader.displayName = "SortableHeader";

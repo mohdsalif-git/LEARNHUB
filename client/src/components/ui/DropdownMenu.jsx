@@ -89,9 +89,9 @@ function DropdownMenuTrigger({ asChild, children, className, ...props }) {
     onClick: handleClick,
     onKeyDown: handleKeyDown,
     className: cn("inline-flex items-center gap-1", className),
-    ariaHaspopup: "menu",
-    ariaExpanded: open,
-    ariaDisabled: disabled,
+    "aria-haspopup": "menu",
+    "aria-expanded": open,
+    "aria-disabled": disabled,
     disabled,
     ...props,
   };
@@ -113,7 +113,7 @@ function DropdownMenuTrigger({ asChild, children, className, ...props }) {
   }
 
   return (
-    <button ref={triggerRef} {...triggerProps}>
+    <button {...triggerProps}>
       {children}
     </button>
   );

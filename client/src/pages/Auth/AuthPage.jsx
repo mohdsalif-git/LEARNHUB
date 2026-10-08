@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { Eye, EyeOff, Loader2, Mail, Lock, User, Chrome } from "lucide-react";
+import { Eye, EyeOff, Loader2, Mail, Lock } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../../components/ui/Card";
@@ -14,12 +14,9 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const { login, register, googleLogin } = useAuth();
+  const { login, register } = useAuth();
   const navigate = useNavigate();
   const formRef = useRef(null);
-
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
     if (formRef.current) {
@@ -66,23 +63,6 @@ export default function AuthPage() {
     }
   }
 
-  async function handleGoogleLogin() {
-    if (!googleClientId) {
-      toast.error("Google login not configured");
-      return;
-    }
-    setGoogleLoading(true);
-    try {
-      // This would use Google Identity Services
-      // For now, we'll show a message
-      toast.error("Google login requires backend setup");
-    } catch (err) {
-      toast.error(err.message || "Google login failed");
-    } finally {
-      setGoogleLoading(false);
-    }
-  }
-
   function toggleMode() {
     setIsLogin((prev) => !prev);
     setEmail("");
@@ -107,27 +87,6 @@ export default function AuthPage() {
           </CardHeader>
 
           <CardContent>
-            {googleClientId && (
-              <Button
-                variant="outline"
-                className="w-full mb-4"
-                onClick={handleGoogleLogin}
-                disabled={loading || googleLoading}
-              >
-                <Chrome className="h-4 w-4 mr-2" />
-                {googleLoading ? "Loading..." : "Continue with Google"}
-              </Button>
-            )}
-
-            <div className="relative mb-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase tracking-wider text-muted-foreground">
-                <span className="bg-card px-2">Or continue with email</span>
-              </div>
-            </div>
-
             <form onSubmit={handleSubmit} ref={formRef} className="space-y-4">
               {!isLogin && (
                 <Input

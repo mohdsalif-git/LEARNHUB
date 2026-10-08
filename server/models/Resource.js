@@ -20,7 +20,7 @@ const resourceSchema = new mongoose.Schema(
     },
     platform: {
       type: String,
-      enum: ["YouTube", "freeCodeCamp", "Edureka", "Google", "MDN", "Coursera", "Khan Academy", "GitHub", "Other"],
+      enum: ["YouTube", "freeCodeCamp", "Edureka", "Google", "MDN", "Coursera", "edX", "Khan Academy", "GitHub", "Official Docs", "Other"],
       default: "Other",
     },
     category: {
@@ -90,6 +90,7 @@ const resourceSchema = new mongoose.Schema(
 
 resourceSchema.index({ title: "text", description: "text", tags: "text" });
 resourceSchema.index({ category: 1 });
+resourceSchema.index({ categoryId: 1 });
 resourceSchema.index({ status: 1 });
 resourceSchema.index({ featured: 1 });
 

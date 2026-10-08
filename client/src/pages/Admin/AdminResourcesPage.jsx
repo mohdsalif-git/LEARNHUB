@@ -37,8 +37,7 @@ export default function AdminResourcesPage() {
     url: "",
     category: "",
     platform: "YouTube",
-    level: "beginner",
-    format: "video",
+    level: "Beginner",
     description: "",
     tags: "",
   });
@@ -91,14 +90,21 @@ export default function AdminResourcesPage() {
 
   const handleCreateResource = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.url || !formData.category) {
-      toast.error("Please fill in required fields (Title, URL, Category)");
+    if (!formData.title?.trim() || !formData.url?.trim() || !formData.category || !formData.description?.trim()) {
+      toast.error("Please fill in required fields (Title, URL, Category, Description)");
       return;
     }
     setIsSubmitting(true);
     try {
+      const matchedCat = categories.find((c) => c.slug === formData.category || c._id === formData.category);
       const payload = {
-        ...formData,
+        title: formData.title.trim(),
+        url: formData.url.trim(),
+        category: formData.category,
+        categoryId: matchedCat?._id,
+        platform: formData.platform,
+        level: formData.level,
+        description: formData.description.trim(),
         tags: typeof formData.tags === "string" ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean) : formData.tags,
         status: "approved",
       };
@@ -110,8 +116,7 @@ export default function AdminResourcesPage() {
         url: "",
         category: categories[0]?.slug || "",
         platform: "YouTube",
-        level: "beginner",
-        format: "video",
+        level: "Beginner",
         description: "",
         tags: "",
       });
@@ -419,37 +424,29 @@ export default function AdminResourcesPage() {
                     onChange={(e) => setFormData({ ...formData, level: e.target.value })}
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
                   >
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                    <option value="all">All Levels</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold uppercase text-muted-foreground mb-1">
-                    Format
+                    Platform
                   </label>
-                  <select
-                    value={formData.format}
-                    onChange={(e) => setFormData({ ...formData, format: e.target.value })}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="video">Video Course</option>
-                    <option value="article">Article / Guide</option>
-                    <option value="interactive">Interactive / Tutorial</option>
-                    <option value="book">Book / Docs</option>
-                    <option value="podcast">Podcast</option>
-                  </select>
+                  <span className="text-xs text-muted-foreground block pt-2">
+                    Configured platform: {formData.platform}
+                  </span>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold uppercase text-muted-foreground mb-1">
-                  Description
+                  Description *
                 </label>
                 <textarea
                   rows={3}
+                  required
                   placeholder="Brief description of this resource..."
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}

@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 import Resource from "../models/Resource.js";
 import Category from "../models/Category.js";
-
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+import { escapeRegex, normalizeTags } from "../utils/queryHelpers.js";
+import { sendInternalError } from "../utils/errorResponse.js";
 
 const getAdminResources = async (req, res) => {
   try {
     const { page = 1, limit = 10, search, status, category, sort = "createdAt", order = "desc" } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 10));
+    const skip = (pageNum - 1) * limitNum;
 
     const query = {};
     if (search) {
@@ -17,13 +17,18 @@ const getAdminResources = async (req, res) => {
       query.$or = [
         { title: { $regex: escaped, $options: "i" } },
         { description: { $regex: escaped, $options: "i" } },
-        { tags: { $in: [new RegExp(escaped, "i")] } },
+        { tags: { $regex: escaped, $options: "i" } },
       ];
     }
     if (status) query.status = status;
     if (category) {
       if (mongoose.Types.ObjectId.isValid(category)) {
-        query.$or = query.$or || [];
+        // If a search $or already exists, move it into $and to avoid overwrite
+        if (query.$or) {
+          query.$and = query.$and || [];
+          query.$and.push({ $or: query.$or });
+          delete query.$or;
+        }
         query.$and = query.$and || [];
         query.$and.push({
           $or: [{ categoryId: category }, { category: category }],
@@ -39,7 +44,7 @@ const getAdminResources = async (req, res) => {
       Resource.find(query)
         .sort(sortOption)
         .skip(skip)
-        .limit(parseInt(limit))
+        .limit(limitNum)
         .populate("categoryId", "name slug")
         .populate("submittedBy", "name email"),
       Resource.countDocuments(query),
@@ -47,10 +52,10 @@ const getAdminResources = async (req, res) => {
 
     res.json({
       success: true,
-      data: { resources, total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) },
+      data: { resources, total, page: pageNum, pages: Math.ceil(total / limitNum) },
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendInternalError(res, error, "Failed to fetch admin resources");
   }
 };
 
@@ -59,13 +64,17 @@ const getAdminCategories = async (req, res) => {
     const categories = await Category.find().sort({ name: 1 });
     res.json({ success: true, data: { categories } });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendInternalError(res, error, "Failed to fetch categories");
   }
 };
 
 const updateAdminResource = async (req, res) => {
   try {
-    const resource = await Resource.findByIdAndUpdate(req.params.id, req.body, {
+    const payload = { ...req.body };
+    if (payload.tags !== undefined) {
+      payload.tags = normalizeTags(payload.tags);
+    }
+    const resource = await Resource.findByIdAndUpdate(req.params.id, payload, {
       new: true,
       runValidators: true,
     }).populate("categoryId", "name slug");
@@ -86,7 +95,7 @@ const deleteAdminResource = async (req, res) => {
     }
     res.json({ success: true, message: "Resource deleted" });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendInternalError(res, error, "Failed to delete resource");
   }
 };
 

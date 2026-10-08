@@ -2,8 +2,9 @@ import { forwardRef, useId } from "react";
 import { cn } from "../../lib/utils";
 
 export const Input = forwardRef(
-  ({ className, type, error, label, leftIcon, rightIcon, disabled, required, placeholder, helpText, ...props }, ref) => {
-    const inputId = props.id || useId();
+  ({ className, type, error, label, leftIcon, rightIcon, disabled, required, placeholder, helpText, id, ...props }, ref) => {
+    const rawId = useId();
+    const inputId = id || `input-${rawId.replace(/[:]/g, "")}`;
     const errorId = error ? `${inputId}-error` : undefined;
     const helpId = helpText ? `${inputId}-help` : undefined;
     const describedBy = [errorId, helpId].filter(Boolean).join(" ") || undefined;

@@ -1,16 +1,28 @@
+import dns from "dns";
 import mongoose from "mongoose";
+
+// Ensure DNS servers resolve MongoDB SRV records reliably on all environments
+try {
+  dns.setServers(["1.1.1.1", "8.8.8.8"]);
+} catch {
+  // Ignore in environments where setting DNS servers is restricted
+}
 
 let cachedConnection = null;
 
 const connectDB = async () => {
-  if (cachedConnection) {
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  if (cachedConnection && mongoose.connection.readyState !== 0) {
     return cachedConnection;
   }
 
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 8000,
     });
     cachedConnection = conn;
     console.log(`MongoDB connected: ${conn.connection.host}`);
@@ -25,3 +37,4 @@ const connectDB = async () => {
 };
 
 export default connectDB;
+

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
@@ -7,24 +7,34 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login, isAdmin } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     try {
       const res = await login(email, password);
-      if (res.data.user.role === "admin") {
+      if (res?.data?.user?.role === "admin") {
         toast.success("Welcome Admin!");
-        navigate("/admin/dashboard");
+        navigate("/admin/dashboard", { replace: true });
       } else {
         toast.error("You are not an admin");
       }
     } catch (err) {
       toast.error(err.message || "Login failed");
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }
 
@@ -37,12 +47,12 @@ export default function AdminLoginPage() {
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="text-sm font-medium text-foreground">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="admin@learnhub.com" />
+              <label htmlFor="admin-email" className="text-sm font-medium text-foreground">Email</label>
+              <input id="admin-email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="admin@learnhub.com" required />
             </div>
             <div>
-              <label className="text-sm font-medium text-foreground">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="Admin password" />
+              <label htmlFor="admin-password" className="text-sm font-medium text-foreground">Password</label>
+              <input id="admin-password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="Admin password" required />
             </div>
             <button type="submit" disabled={loading} className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
               {loading ? "Signing in..." : "Sign in as Admin"}

@@ -1,4 +1,5 @@
 import Feedback from "../models/Feedback.js";
+import { sendInternalError } from "../utils/errorResponse.js";
 
 const createFeedback = async (req, res) => {
   try {
@@ -6,11 +7,15 @@ const createFeedback = async (req, res) => {
     if (!name || !rating || !message) {
       return res.status(400).json({ success: false, message: "Name, rating, and message are required" });
     }
+    const cleanName = String(name).trim().slice(0, 100);
+    const cleanEmail = email ? String(email).trim().toLowerCase().slice(0, 255) : "";
+    const cleanMessage = String(message).trim().slice(0, 2000);
+
     const feedback = await Feedback.create({
-      name,
-      email,
+      name: cleanName,
+      email: cleanEmail,
       rating,
-      message,
+      message: cleanMessage,
       user: req.user?._id,
     });
     res.status(201).json({ success: true, data: { feedback } });
@@ -26,7 +31,7 @@ const getPublishedFeedback = async (req, res) => {
       .limit(20);
     res.json({ success: true, data: { feedback } });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendInternalError(res, error, "Failed to fetch feedback");
   }
 };
 
@@ -42,7 +47,7 @@ const updateFeedback = async (req, res) => {
     }
     res.json({ success: true, data: { feedback } });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendInternalError(res, error, "Failed to update feedback");
   }
 };
 
@@ -54,7 +59,7 @@ const deleteFeedback = async (req, res) => {
     }
     res.json({ success: true, message: "Feedback deleted" });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendInternalError(res, error, "Failed to delete feedback");
   }
 };
 

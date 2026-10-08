@@ -1,7 +1,7 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
-import moment from "moment";
+import { sendInternalError } from "../utils/errorResponse.js";
 
 const registerUser = async (req, res) => {
   try {
@@ -11,14 +11,30 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    const existing = await User.findOne({ email });
+    const cleanName = String(name).trim();
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanPassword = String(password);
+
+    if (cleanName.length > 100) {
+      return res.status(400).json({ success: false, message: "Name must not exceed 100 characters" });
+    }
+
+    if (cleanEmail.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      return res.status(400).json({ success: false, message: "Please provide a valid email address" });
+    }
+
+    if (cleanPassword.length < 6 || cleanPassword.length > 128) {
+      return res.status(400).json({ success: false, message: "Password must be between 6 and 128 characters" });
+    }
+
+    const existing = await User.findOne({ email: cleanEmail });
     if (existing) {
       return res.status(409).json({ success: false, message: "Email already registered" });
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name: cleanName, email: cleanEmail, password: cleanPassword });
     const token = generateToken(user._id);
-    const expiresAt = moment().add(30, "days").toDate();
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     
     res.status(201).json({
       success: true,
@@ -26,7 +42,7 @@ const registerUser = async (req, res) => {
       data: { user, token, expiresAt },
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendInternalError(res, error, "Registration failed");
   }
 };
 
@@ -38,7 +54,8 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    const cleanEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({ email: cleanEmail }).select("+password");
     if (!user) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
@@ -53,7 +70,7 @@ const loginUser = async (req, res) => {
     }
 
     const token = generateToken(user._id);
-    const expiresAt = moment().add(30, "days").toDate();
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     
     res.json({
       success: true,
@@ -61,64 +78,33 @@ const loginUser = async (req, res) => {
       data: { user, token, expiresAt },
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendInternalError(res, error, "Login failed");
   }
 };
 
-const googleAuth = async (req, res) => {
-  try {
-    const { credential, email: reqEmail, name: reqName, avatar: reqAvatar } = req.body;
-    let email = reqEmail;
-    let name = reqName;
-    let avatar = reqAvatar || "";
-
-    if (credential) {
-      try {
-        const decoded = jwt.decode(credential);
-        if (decoded && decoded.email) {
-          email = decoded.email;
-          name = decoded.name || name || "Google User";
-          avatar = decoded.picture || avatar;
-        }
-      } catch {
-        // Continue with direct fields if decode fails
-      }
-    }
-
-    if (!email) {
-      return res.status(400).json({ success: false, message: "Email is required for Google login" });
-    }
-
-    let user = await User.findOne({ email });
-    if (!user) {
-      user = await User.create({
-        name: name || email.split("@")[0],
-        email,
-        avatar,
-        provider: "google",
-      });
-    }
-
-    const token = generateToken(user._id);
-    const expiresAt = moment().add(30, "days").toDate();
-
-    res.json({
-      success: true,
-      message: "Google login successful",
-      data: { user, token, expiresAt },
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
 
 const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    res.json({ success: true, data: { user } });
+    // BUG #8 FIX: Return expiresAt so AuthContext can schedule token refresh.
+    // We read expiresAt from the token in the Authorization header rather than
+    // relying on a stored value, ensuring it matches the real token lifetime.
+    let expiresAt = null;
+    try {
+      const token = req.headers.authorization?.split(" ")[1];
+      if (token) {
+        const decoded = jwt.decode(token);
+        if (decoded?.exp) {
+          expiresAt = new Date(decoded.exp * 1000).toISOString();
+        }
+      }
+    } catch {
+      // Non-fatal — expiresAt will remain null
+    }
+    res.json({ success: true, data: { user, expiresAt } });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    sendInternalError(res, error, "Failed to retrieve user profile");
   }
 };
 
-export { registerUser, loginUser, googleAuth, getMe };
+export { registerUser, loginUser, getMe };

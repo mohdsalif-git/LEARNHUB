@@ -14,4 +14,5 @@ export const resourceService = {
     return api.get(`/resources/community${query ? `?${query}` : ""}`);
   },
   submit: (data) => api.post("/resources/submit", data),
+  recordView: (id) => api.post(`/resources/${id}/view`),
 };

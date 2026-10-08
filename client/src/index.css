@@ -246,6 +246,49 @@
   @apply text-xs font-medium;
 }
 
+
 @utility text-caption {
   @apply text-xs text-muted-foreground;
 }
+
+/* ── Marquee / Carousel scrolling ─────────────────────────────────────── */
+@keyframes marquee-scroll {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marquee-scroll-reverse {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+.marquee-track {
+  display: flex !important;
+  flex-shrink: 0;
+  width: max-content;
+  animation: marquee-scroll 35s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track-reverse {
+  display: flex !important;
+  flex-shrink: 0;
+  width: max-content;
+  animation: marquee-scroll-reverse 35s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track:hover,
+.marquee-track-reverse:hover,
+.marquee-track:focus-within,
+.marquee-track-reverse:focus-within {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track,
+  .marquee-track-reverse {
+    animation: none !important;
+  }
+}
+

@@ -1,4 +1,9 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+// In development (.env.development), VITE_API_URL is intentionally empty so we
+// fall through to the Vite proxy path "/api" (→ http://localhost:5000/api).
+// In production, VITE_API_URL is set to the deployed backend URL in .env.
+const API_URL = (import.meta.env.VITE_API_URL || "").trim()
+  ? import.meta.env.VITE_API_URL.trim().replace(/\/+$/, "")
+  : "/api";
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem("learnhub_token");
@@ -10,7 +15,10 @@ async function request(endpoint, options = {}) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const normalizedEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+
+  const response = await fetch(`${API_URL}${normalizedEndpoint}`, {
+    cache: "no-store",
     ...options,
     headers,
   });
@@ -24,12 +32,15 @@ async function request(endpoint, options = {}) {
   }
 
   if (!response.ok) {
-    // Handle token expiry (401) - could auto-logout
-    if (response.status === 401) {
+    const isAuthAttempt =
+      normalizedEndpoint.startsWith("/auth/login") ||
+      normalizedEndpoint.startsWith("/auth/register");
+
+    // Only handle token expiry / auto-logout if a token was actually attached
+    // and this is not an invalid credentials attempt on login/register
+    if (response.status === 401 && token && !isAuthAttempt) {
       localStorage.removeItem("learnhub_token");
-      // Dispatch logout event or notify auth context
-      const event = new Event("auth logout");
-      window.dispatchEvent(event);
+      window.dispatchEvent(new Event("auth logout"));
     }
     throw new Error(data.message || "Request failed");
   }
@@ -40,5 +51,6 @@ export const api = {
   get: (endpoint) => request(endpoint),
   post: (endpoint, body) => request(endpoint, { method: "POST", body: JSON.stringify(body) }),
   put: (endpoint, body) => request(endpoint, { method: "PUT", body: JSON.stringify(body) }),
+  patch: (endpoint, body) => request(endpoint, { method: "PATCH", body: JSON.stringify(body) }),
   delete: (endpoint) => request(endpoint, { method: "DELETE" }),
 };

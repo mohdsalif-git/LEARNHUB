@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { getJwtSecret } from "../utils/generateToken.js";
 
 const authenticate = async (req, res, next) => {
   let token;
@@ -7,7 +8,7 @@ const authenticate = async (req, res, next) => {
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     try {
       token = req.headers.authorization.split(" ")[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, getJwtSecret());
       req.user = await User.findById(decoded.id).select("-password");
       if (!req.user) {
         return res.status(401).json({ success: false, message: "Not authorized" });
@@ -26,7 +27,7 @@ const optionalAuthenticate = async (req, res, next) => {
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     try {
       token = req.headers.authorization.split(" ")[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "learnhub_jwt_secret_change_in_production_2025");
+      const decoded = jwt.verify(token, getJwtSecret());
       req.user = await User.findById(decoded.id).select("-password");
     } catch {
       req.user = null;

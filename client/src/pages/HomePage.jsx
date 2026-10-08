@@ -1,26 +1,65 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ArrowRight, Share2, Coffee, Sparkles, BadgeCheck, Users, Heart, Star, Loader2, AlertCircle, Play, BookOpen, Zap, Globe, Shield, MessageSquare, TrendingUp } from "lucide-react";
+import {
+  Search,
+  ArrowRight,
+  Share2,
+  Sparkles,
+  BadgeCheck,
+  Users,
+  Heart,
+  Star,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import { ResourceCard } from "../components/resources/ResourceCard";
 import { SectionHeader } from "../components/common/SectionHeader";
-import { CategoryIcon } from "../components/common/CategoryIcon";
-import { categories, popularTags, team } from "../lib/data";
+import { FeatureCard } from "../components/common/FeatureCard";
+import { CategoryCarousel } from "../components/common/CategoryCarousel";
+import { categories as defaultCategories, popularTags, team as defaultTeam } from "../lib/data";
 import { resourceService } from "../services/resourceService";
 import { feedbackService } from "../services/feedbackService";
+import { contentService } from "../services/contentService";
+import { categoryService } from "../services/categoryService";
 import { Button } from "../components/ui/Button";
 import { Skeleton, SkeletonCard } from "../components/ui/Skeleton";
-import { Badge } from "../components/ui/Badge";
-import { Card, CardContent } from "../components/ui/Card";
 import { EmptyState } from "../components/ui/StateComponents";
+
+const DEFAULT_WHY_CARDS = [
+  { icon: "search", title: "Discover Resources", description: "Find free videos, tutorials, and courses from trusted platforms — all in one search." },
+  { icon: "play", title: "Video Learning", description: "Access curated YouTube, freeCodeCamp, and educational videos organized by topic." },
+  { icon: "book-open", title: "Organized by Topic", description: "Browse structured learning paths across web development, data science, design, and more." },
+  { icon: "share2", title: "Share Knowledge", description: "Contribute resources you find useful and help the community grow." },
+  { icon: "message-square", title: "Community Feedback", description: "Read real learner reviews and share your own experience to help others." },
+  { icon: "zap", title: "Always Free", description: "No paywalls, no subscriptions. Just free learning resources, forever." },
+];
+
+const DEFAULT_HOW_STEPS = [
+  { number: "01", title: "Search or Browse", description: "Find what you want to learn by searching or exploring categories." },
+  { number: "02", title: "Choose a Resource", description: "Pick from curated free videos, tutorials, and courses." },
+  { number: "03", title: "Start Learning", description: "Open the resource directly on the original platform — no login required." },
+  { number: "04", title: "Save & Share", description: "Bookmark resources and share great finds with the community." },
+];
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { user, authLoading } = useAuth();
+
   const [q, setQ] = useState("");
   const [featuredResources, setFeaturedResources] = useState([]);
   const [recentResources, setRecentResources] = useState([]);
   const [videoResources, setVideoResources] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [stats, setStats] = useState(null);
+
+  // Dynamic content from API
+  const [whyCards, setWhyCards] = useState(DEFAULT_WHY_CARDS);
+  const [howSteps, setHowSteps] = useState(DEFAULT_HOW_STEPS);
+  const [teamMembers, setTeamMembers] = useState(defaultTeam);
+  const [dbCategories, setDbCategories] = useState(defaultCategories);
+  const [siteSettings, setSiteSettings] = useState(null);
+
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [loadingRecent, setLoadingRecent] = useState(true);
   const [loadingVideos, setLoadingVideos] = useState(true);
@@ -28,6 +67,40 @@ export default function HomePage() {
   const [loadingStats, setLoadingStats] = useState(true);
   const [featuredError, setFeaturedError] = useState(false);
   const [testimonialsError, setTestimonialsError] = useState(false);
+
+  // Fetch Site Content from DB
+  useEffect(() => {
+    async function loadDynamicContent() {
+      try {
+        const [whyRes, howRes, teamRes, catRes, settingsRes] = await Promise.allSettled([
+          contentService.getWhyCards(),
+          contentService.getHowSteps(),
+          contentService.getTeam(),
+          categoryService.getAll({ status: "active" }),
+          contentService.getPublicSettings(),
+        ]);
+
+        if (whyRes.status === "fulfilled" && whyRes.value.data?.cards?.length > 0) {
+          setWhyCards(whyRes.value.data.cards);
+        }
+        if (howRes.status === "fulfilled" && howRes.value.data?.steps?.length > 0) {
+          setHowSteps(howRes.value.data.steps);
+        }
+        if (teamRes.status === "fulfilled" && teamRes.value.data?.members?.length > 0) {
+          setTeamMembers(teamRes.value.data.members);
+        }
+        if (catRes.status === "fulfilled" && catRes.value.data?.categories?.length > 0) {
+          setDbCategories(catRes.value.data.categories);
+        }
+        if (settingsRes.status === "fulfilled" && settingsRes.value.data) {
+          setSiteSettings(settingsRes.value.data);
+        }
+      } catch {
+        // Fallbacks already in place
+      }
+    }
+    loadDynamicContent();
+  }, []);
 
   const fetchFeatured = useCallback(async () => {
     setLoadingFeatured(true);
@@ -83,7 +156,6 @@ export default function HomePage() {
     setLoadingStats(true);
     try {
       const res = await resourceService.getAll({ limit: 1 });
-      // We'll get total count from the response
       setStats({ totalResources: res.data?.total || 0 });
     } catch {
       setStats({ totalResources: 0 });
@@ -112,45 +184,14 @@ export default function HomePage() {
     if (type === "testimonials") fetchTestimonials();
   };
 
-  const platformValueItems = [
-    {
-      icon: Search,
-      title: "Discover Resources",
-      description: "Find free videos, tutorials, and courses from trusted platforms — all in one search.",
-    },
-    {
-      icon: Play,
-      title: "Video Learning",
-      description: "Access curated YouTube, freeCodeCamp, and educational videos organized by topic.",
-    },
-    {
-      icon: BookOpen,
-      title: "Organized by Topic",
-      description: "Browse structured learning paths across web development, data science, design, and more.",
-    },
-    {
-      icon: Share2,
-      title: "Share Knowledge",
-      description: "Contribute resources you find useful and help the community grow.",
-    },
-    {
-      icon: MessageSquare,
-      title: "Community Feedback",
-      description: "Read real learner reviews and share your own experience to help others.",
-    },
-    {
-      icon: Zap,
-      title: "Always Free",
-      description: "No paywalls, no subscriptions. Just free learning resources, forever.",
-    },
-  ];
+  // Only show guest sections (Why LearnHub, How It Works) when logged out AND not loading auth
+  const showGuestSections = !authLoading && !user;
 
-  const howItWorksSteps = [
-    { number: "01", title: "Search or Browse", description: "Find what you want to learn by searching or exploring categories." },
-    { number: "02", title: "Choose a Resource", description: "Pick from curated free videos, tutorials, and courses." },
-    { number: "03", title: "Start Learning", description: "Open the resource directly on the original platform — no login required." },
-    { number: "04", title: "Save & Share", description: "Bookmark resources and share great finds with the community." },
-  ];
+  // The CSS marquee-scroll animation runs from translateX(0) to translateX(-50%).
+  // The track must contain exactly 2 copies so -50% lands back at the seam point.
+
+  const heroHeading = siteSettings?.heroTitle || "Find the Best Free Learning Resources in One Place";
+  const heroDescription = siteSettings?.heroSubtitle || "Search free videos, tutorials and courses from YouTube, Edureka, Google, freeCodeCamp and more — organized for faster learning.";
 
   return (
     <>
@@ -161,14 +202,20 @@ export default function HomePage() {
         <div className="pointer-events-none absolute -bottom-32 left-[-10%] h-[360px] w-[360px] rounded-full opacity-15 blur-3xl" style={{ background: "linear-gradient(135deg, var(--secondary), var(--primary-glow))" }} aria-hidden="true" />
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:py-28">
           <div className="mx-auto max-w-3xl text-center animate-fade-up">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-primary shadow-[var(--shadow-card)]">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary shadow-[var(--shadow-card)]">
               <Sparkles className="h-3.5 w-3.5" /> One Search. All Knowledge. Zero Cost.
             </span>
             <h1 id="hero-heading" className="mt-5 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Find the Best <span className="text-gradient">Free Learning</span> Resources in One Place
+              {heroHeading.includes("Free Learning") ? (
+                <>
+                  Find the Best <span className="text-gradient">Free Learning</span> Resources in One Place
+                </>
+              ) : (
+                heroHeading
+              )}
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Search free videos, tutorials and courses from YouTube, Edureka, Google, freeCodeCamp and more — organized for faster learning.
+            <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg leading-relaxed">
+              {heroDescription}
             </p>
 
             <form onSubmit={handleSearch} className="mx-auto mt-8 flex max-w-2xl items-center gap-2 rounded-full border border-border bg-background p-2 shadow-[var(--shadow-elevated)]" role="search">
@@ -233,7 +280,7 @@ export default function HomePage() {
             </div>
             <div role="listitem" className="p-4">
               <div className="text-3xl sm:text-4xl font-bold text-foreground" aria-label="Categories">
-                {categories.length}
+                {dbCategories.length}
               </div>
               <p className="mt-1 text-sm text-muted-foreground">Learning Categories</p>
             </div>
@@ -253,38 +300,62 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Platform Value */}
-      <section className="py-16 sm:py-24" aria-labelledby="value-heading">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeader
-            id="value-heading"
-            eyebrow="Why LearnHub"
-            title="Everything you need to learn anything"
-            description="A unified platform that makes discovering free educational content simple, fast, and enjoyable."
-          />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {platformValueItems.map((item, index) => (
-              <article key={index} className="group relative p-6 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-[var(--shadow-elevated)] transition-all duration-200">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl text-primary group-hover:bg-primary/10 transition-colors">
-                  <item.icon className="h-6 w-6" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-foreground">{item.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{item.description}</p>
-              </article>
-            ))}
+      {/* Task 4 & 5: Platform Value / "Why LearnHub" (Shown ONLY to logged-out visitors with continuous marquee scrolling) */}
+      {showGuestSections && (
+        <section className="py-16 sm:py-24 overflow-hidden" aria-labelledby="value-heading">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-8">
+            <SectionHeader
+              id="value-heading"
+              eyebrow="WHY LEARNHUB"
+              title="Everything you need to learn anything"
+              description="A unified platform that makes discovering free educational content simple, fast, and enjoyable."
+            />
           </div>
-        </div>
-      </section>
+
+          {/*
+            overflow:hidden masks the aria-hidden clone set so it is never
+            visible as a separate row. The CSS marquee-track animation loops
+            from 0 → -50%, hitting the seam exactly where the clone begins.
+          */}
+          <div
+            className="overflow-hidden w-full"
+            aria-label="Why LearnHub scrolling marquee"
+          >
+            <div className="marquee-track flex gap-5 pl-4 py-2">
+              {/* Visible originals */}
+              {whyCards.map((item, index) => (
+                <FeatureCard
+                  key={item._id || item.title || index}
+                  icon={item.icon}
+                  title={item.title}
+                  description={item.description}
+                />
+              ))}
+              {/* Clone set for seamless loop — hidden from assistive tech */}
+              {whyCards.map((item, index) => (
+                <FeatureCard
+                  key={`clone-${item._id || item.title || index}`}
+                  icon={item.icon}
+                  title={item.title}
+                  description={item.description}
+                  aria-hidden="true"
+                  tabIndex={-1}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Featured Resources */}
       <section className="py-16 sm:py-24 bg-muted/30" aria-labelledby="featured-heading">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
             id="featured-heading"
-            eyebrow="Featured"
+            eyebrow="FEATURED PICKS"
             title="Hand-picked free resources"
             description="Curated by our team — these are the best free resources available right now."
-            action={<Link to="/search?featured=true" className="text-sm font-semibold text-primary hover:underline">View all featured &rarr;</Link>}
+            action={<Link to="/search?featured=true" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">View all featured <ArrowRight className="h-4 w-4" /></Link>}
           />
           {loadingFeatured ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading featured resources">
@@ -310,46 +381,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Resource Discovery */}
-      <section className="py-16 sm:py-24" aria-labelledby="categories-heading">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeader
-            id="categories-heading"
-            eyebrow="Browse by Topic"
-            title="Learn by category"
-            description="Curated free resources organized by topic — pick a track and dive in."
-            action={<Link to="/categories" className="text-sm font-semibold text-primary hover:underline">View all categories &rarr;</Link>}
-          />
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {categories.slice(0, 15).map((c) => (
-              <Link
-                key={c.slug}
-                to={`/categories/${c.slug}`}
-                className="group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[var(--shadow-elevated)]"
-              >
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl" style={{ background: `color-mix(in oklab, ${c.color} 14%, transparent)`, color: c.color }}>
-                  <CategoryIcon icon={c.icon} sizePx={22} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-foreground group-hover:text-primary">{c.name}</span>
-                  <span className="block truncate text-xs text-muted-foreground">{c.description}</span>
-                </span>
-                <ArrowRight className="h-4 w-4 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0 group-hover:text-primary group-hover:opacity-100" />
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Task 6 & 7: Two-Row Scrolling Category Carousel */}
+      <CategoryCarousel categories={dbCategories} />
 
       {/* Video Learning */}
       <section className="py-16 sm:py-24 bg-muted/30" aria-labelledby="videos-heading">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
             id="videos-heading"
-            eyebrow="Video Learning"
+            eyebrow="VIDEO LEARNING"
             title="Free video tutorials from top creators"
             description="Curated YouTube channels and educational videos organized for structured learning."
-            action={<Link to="/search?platform=YouTube" className="text-sm font-semibold text-primary hover:underline">Explore all videos &rarr;</Link>}
+            action={<Link to="/search?platform=YouTube" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">Explore all videos <ArrowRight className="h-4 w-4" /></Link>}
           />
           {loadingVideos ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading video resources">
@@ -367,38 +410,43 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 sm:py-24" aria-labelledby="how-heading">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeader
-            id="how-heading"
-            eyebrow="How It Works"
-            title="Start learning in four simple steps"
-            description="No complex setup, no paywalls — just find and learn."
-          />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {howItWorksSteps.map((step, index) => (
-              <article key={index} className="relative p-6 rounded-2xl border border-border bg-card">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-lg">
-                  {step.number}
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-foreground">{step.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{step.description}</p>
-              </article>
-            ))}
+      {/* Task 4: How It Works (Shown ONLY to logged-out visitors) */}
+      {showGuestSections && (
+        <section className="py-16 sm:py-24" aria-labelledby="how-heading">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <SectionHeader
+              id="how-heading"
+              eyebrow="GETTING STARTED"
+              title="Start learning in four simple steps"
+              description="No complex setup, no paywalls — just find and learn."
+            />
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {howSteps.map((step, index) => (
+                <article
+                  key={step._id || index}
+                  className="relative p-6 rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] hover:border-primary/40 hover:shadow-[var(--shadow-elevated)] transition-all duration-200"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-base border border-primary/20">
+                    {step.number || `0${index + 1}`}
+                  </div>
+                  <h3 className="mt-4 text-base font-bold text-foreground">{step.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+                </article>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Community Feedback */}
       <section className="py-16 sm:py-24 bg-muted/30" aria-labelledby="feedback-heading">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
             id="feedback-heading"
-            eyebrow="Community"
+            eyebrow="COMMUNITY REVIEWS"
             title="What learners are saying"
             description="Real feedback from real learners using LearnHub."
-            action={<Link to="/feedback" className="text-sm font-semibold text-primary hover:underline">View all feedback &rarr;</Link>}
+            action={<Link to="/feedback" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">View all feedback <ArrowRight className="h-4 w-4" /></Link>}
           />
           {loadingTestimonials ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading testimonials">
@@ -448,7 +496,7 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="py-16 sm:py-24" aria-labelledby="cta-heading">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="overflow-hidden rounded-3xl p-8 sm:p-12 lg:p-16 text-primary-foreground" style={{ background: "var(--gradient-hero)" }}>
+          <div className="overflow-hidden rounded-3xl p-8 sm:p-12 lg:p-16 text-primary-foreground shadow-xl" style={{ background: "var(--gradient-hero)" }}>
             <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto] max-w-4xl mx-auto text-center lg:text-left">
               <div>
                 <h2 id="cta-heading" className="text-2xl font-bold sm:text-3xl lg:text-4xl">Ready to start learning?</h2>
@@ -456,7 +504,7 @@ export default function HomePage() {
                   Join thousands of learners discovering free educational content every day. No paywalls, no subscriptions — just quality free resources.
                 </p>
               </div>
-              <Link to="/categories" className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-3 text-sm font-semibold text-primary hover:bg-background/90 transition-colors">
+              <Link to="/categories" className="inline-flex items-center justify-center gap-2 rounded-full bg-background px-8 py-3 text-sm font-semibold text-primary hover:bg-background/90 transition-colors shadow-md">
                 Start Learning <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -464,26 +512,51 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Team */}
+      {/* Team Section */}
       <section className="py-16 sm:py-24 bg-muted/30" aria-labelledby="team-heading">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeader
             id="team-heading"
-            eyebrow="Team"
+            eyebrow="OUR TEAM"
             title="Meet the people behind LearnHub"
-            action={<Link to="/team" className="text-sm font-semibold text-primary hover:underline">View team &rarr;</Link>}
+            description="Dedicated contributors working to keep high-quality education accessible to all."
+            action={<Link to="/team" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">View team <ArrowRight className="h-4 w-4" /></Link>}
           />
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-            {team.map((m) => (
-              <article key={m.name} className="rounded-2xl border border-border bg-card p-6 text-center shadow-[var(--shadow-card)]">
-                <div className="mx-auto grid h-16 w-16 place-items-center rounded-full text-lg font-bold text-primary-foreground" style={{ background: `linear-gradient(135deg, ${m.color}, var(--primary-glow))` }}>
-                  {m.initials}
-                </div>
-                <h3 className="mt-3 text-sm font-semibold text-foreground">{m.name}</h3>
-                <p className="text-xs text-primary">{m.role}</p>
-                <p className="mt-2 text-xs text-muted-foreground">{m.bio}</p>
-              </article>
-            ))}
+            {teamMembers.map((m) => {
+              const initials =
+                m.initials ||
+                m.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase() ||
+                "LH";
+              const color = m.color || "oklch(0.55 0.22 285)";
+
+              return (
+                <article key={m._id || m.name} className="rounded-2xl border border-border bg-card p-6 text-center shadow-[var(--shadow-card)] hover:border-primary/40 hover:shadow-[var(--shadow-elevated)] transition-all duration-200">
+                  {m.photo ? (
+                    <img
+                      src={m.photo}
+                      alt={m.name}
+                      className="mx-auto h-16 w-16 rounded-full object-cover border border-border shadow-xs"
+                    />
+                  ) : (
+                    <div
+                      className="mx-auto grid h-16 w-16 place-items-center rounded-full text-lg font-bold text-primary-foreground shadow-xs"
+                      style={{ background: `linear-gradient(135deg, ${color}, var(--primary-glow))` }}
+                    >
+                      {initials}
+                    </div>
+                  )}
+                  <h3 className="mt-3 text-sm font-semibold text-foreground">{m.name}</h3>
+                  <p className="text-xs text-primary font-medium mt-0.5">{m.role}</p>
+                  <p className="mt-2 text-xs text-muted-foreground line-clamp-2 leading-relaxed">{m.bio}</p>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>

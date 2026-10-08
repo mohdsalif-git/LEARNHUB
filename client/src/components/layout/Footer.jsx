@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { categories } from "../../lib/data";
-import { Github, Twitter, Youtube, Mail } from "lucide-react";
+import { Github, Twitter, Youtube, Mail, Coffee } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -42,6 +42,18 @@ export function Footer() {
                 <s.icon className="h-5 w-5" />
               </a>
             ))}
+          </div>
+          <div className="pt-2">
+            <a
+              href={import.meta.env.VITE_BUY_ME_A_COFFEE_URL || "https://buymeacoffee.com/learnhub"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted hover:border-primary/40 transition-colors shadow-sm"
+              aria-label="Support LearnHub on Buy Me a Coffee"
+            >
+              <Coffee className="h-4 w-4 text-[color:var(--warning)]" />
+              <span>Buy us a coffee</span>
+            </a>
           </div>
         </div>
 

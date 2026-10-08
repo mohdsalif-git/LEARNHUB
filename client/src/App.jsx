@@ -1,15 +1,17 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Toaster } from "react-hot-toast";
 import { useAuth as useAuthHook } from "./context/AuthContext";
 import { PageShell } from "./components/layout/PageShell";
-import { AuthProvider } from "./context/AuthContext";
 import { AdminLayout } from "./components/layout/AdminLayout";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { Skeleton } from "./components/ui/Skeleton";
+import LoginPage from "./pages/Auth/LoginPage";
+import SignupPage from "./pages/Auth/SignupPage";
+import ProfilePage from "./pages/ProfilePage";
 
 // Lazy load pages for code splitting
 const HomePage = lazy(() => import("./pages/HomePage"));
-const AuthPage = lazy(() => import("./pages/Auth/AuthPage"));
 const AdminLoginPage = lazy(() => import("./pages/Admin/AdminLoginPage"));
 const AdminSetupPage = lazy(() => import("./pages/Admin/AdminSetupPage"));
 const SearchPage = lazy(() => import("./pages/Resources/SearchPage"));
@@ -36,6 +38,9 @@ const AdminPaymentsPage = lazy(() => import("./pages/Admin/AdminPaymentsPage"));
 const AdminMembersPage = lazy(() => import("./pages/Admin/AdminMembersPage"));
 const AdminFeedbackPage = lazy(() => import("./pages/Admin/AdminFeedbackPage"));
 const AdminResourcesPage = lazy(() => import("./pages/Admin/AdminResourcesPage"));
+const AdminAnalyticsPage = lazy(() => import("./pages/Admin/AdminAnalyticsPage"));
+const AdminSettingsPage = lazy(() => import("./pages/Admin/AdminSettingsPage"));
+const AdminContentPage = lazy(() => import("./pages/Admin/AdminContentPage"));
 
 function LoadingFallback() {
   return (
@@ -58,26 +63,36 @@ function PageWithSuspense({ children }) {
   );
 }
 
+// Protected route for authenticated users — waits until /auth/me resolves via authLoading
 function ProtectedRoute({ children }) {
-  const { user, loading } = useAuthHook();
-  if (loading) return <LoadingScreen />;
+  const { user, authLoading } = useAuthHook();
+  if (authLoading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
 
+// Admin route with dedicated layout
 function AdminRoute({ children }) {
-  const { user, loading, isAdmin } = useAuthHook();
-  if (loading) return <LoadingScreen />;
+  const { user, authLoading, isAdmin } = useAuthHook();
+  if (authLoading) return <LoadingScreen />;
   if (!user) return <Navigate to="/admin/login" replace />;
-  if (!isAdmin) return <Navigate to="/" replace />;
+  if (!isAdmin) return <Navigate to="/dashboard" replace />;
   return children;
 }
 
+// Guest route for public access — redirects authenticated users without double-navigation
 function GuestRoute({ children }) {
-  const { user, loading, isAdmin } = useAuthHook();
-  if (loading) return <LoadingScreen />;
-  if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
-  if (user) return <Navigate to="/dashboard" replace />;
+  const { user, authLoading, isAdmin } = useAuthHook();
+  const location = useLocation();
+
+  if (authLoading) return <LoadingScreen />;
+
+  if (user) {
+    if (isAdmin) return <Navigate to="/admin/dashboard" replace />;
+    const dest = location.state?.dest || location.state?.from?.pathname || "/dashboard";
+    return <Navigate to={dest} replace />;
+  }
+
   return children;
 }
 
@@ -113,12 +128,17 @@ function AppRoutes() {
       <Route path="/payment/success" element={<PageShell><PageWithSuspense><PaymentSuccessPage /></PageWithSuspense></PageShell>} />
       <Route path="/payment/failed" element={<PageShell><PageWithSuspense><PaymentFailedPage /></PageWithSuspense></PageShell>} />
 
-      <Route path="/login" element={<GuestRoute><PageShell><PageWithSuspense><AuthPage /></PageWithSuspense></PageShell></GuestRoute>} />
-      <Route path="/register" element={<Navigate to="/login" replace />} />
+      {/* Auth routes - separate login and signup */}
+      <Route path="/login" element={<GuestRoute><PageShell><PageWithSuspense><LoginPage /></PageWithSuspense></PageShell></GuestRoute>} />
+      <Route path="/signup" element={<GuestRoute><PageShell><PageWithSuspense><SignupPage /></PageWithSuspense></PageShell></GuestRoute>} />
       <Route path="/auth" element={<Navigate to="/login" replace />} />
 
+      {/* Protected user routes */}
       <Route path="/bookmarks" element={<ProtectedRoute><PageShell><PageWithSuspense><BookmarksPage /></PageWithSuspense></PageShell></ProtectedRoute>} />
+      <Route path="/saved" element={<Navigate to="/bookmarks" replace />} />
+      <Route path="/saved-resources" element={<Navigate to="/bookmarks" replace />} />
       <Route path="/dashboard" element={<ProtectedRoute><PageShell><PageWithSuspense><DashboardPage /></PageWithSuspense></PageShell></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><PageShell><PageWithSuspense><ProfilePage /></PageWithSuspense></PageShell></ProtectedRoute>} />
 
       {/* Admin public / setup routes */}
       <Route path="/admin/login" element={<GuestRoute><PageShell><PageWithSuspense><AdminLoginPage /></PageWithSuspense></PageShell></GuestRoute>} />
@@ -131,8 +151,11 @@ function AppRoutes() {
         <Route path="/admin/members" element={<PageWithSuspense><AdminMembersPage /></PageWithSuspense>} />
         <Route path="/admin/resources" element={<PageWithSuspense><AdminResourcesPage /></PageWithSuspense>} />
         <Route path="/admin/categories" element={<PageWithSuspense><AdminCategoriesPage /></PageWithSuspense>} />
+        <Route path="/admin/content" element={<PageWithSuspense><AdminContentPage /></PageWithSuspense>} />
         <Route path="/admin/feedback" element={<PageWithSuspense><AdminFeedbackPage /></PageWithSuspense>} />
         <Route path="/admin/payments" element={<PageWithSuspense><AdminPaymentsPage /></PageWithSuspense>} />
+        <Route path="/admin/analytics" element={<PageWithSuspense><AdminAnalyticsPage /></PageWithSuspense>} />
+        <Route path="/admin/settings" element={<PageWithSuspense><AdminSettingsPage /></PageWithSuspense>} />
       </Route>
 
       <Route path="*" element={<PageShell><NotFoundPage /></PageShell>} />
@@ -142,10 +165,10 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <>
+    <ErrorBoundary>
       <Toaster position="top-right" />
       <AppRoutes />
-    </>
+    </ErrorBoundary>
   );
 }
 

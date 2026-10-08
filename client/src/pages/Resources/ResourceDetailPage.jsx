@@ -4,7 +4,7 @@ import { ArrowLeft, ExternalLink, Star, Bookmark, Share2 } from "lucide-react";
 import { resourceService } from "../../services/resourceService";
 import { bookmarkService } from "../../services/bookmarkService";
 import { useAuth } from "../../context/AuthContext";
-import { getThumbnail, getPlatformBadgeStyle } from "../../lib/thumbnails";
+import { getThumbnail, getPlatformBadgeStyle, getEmbedUrl } from "../../lib/thumbnails";
 import toast from "react-hot-toast";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -15,14 +15,40 @@ export default function ResourceDetailPage() {
   const [resource, setResource] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookmarked, setBookmarked] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
+    let isMounted = true;
     resourceService.getById(id)
-      .then((res) => setResource(res.data.resource))
-      .catch(() => toast.error("Resource not found"))
-      .finally(() => setLoading(false));
-  }, [id]);
+      .then((res) => {
+        if (!isMounted) return;
+        setResource(res.data.resource);
+        if (user) {
+          resourceService.recordView(id).catch(() => {});
+        }
+      })
+      .catch(() => {
+        if (isMounted) toast.error("Resource not found");
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    if (user) {
+      bookmarkService.getAll().then((res) => {
+        if (!isMounted) return;
+        const exists = res.data?.bookmarks?.some(
+          (b) => (b.resource?._id || b.resource) === id
+        );
+        setBookmarked(!!exists);
+      }).catch(() => {});
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, user]);
 
   async function toggleBookmark() {
     if (!user) {
@@ -64,6 +90,7 @@ export default function ResourceDetailPage() {
     );
   }
 
+  const embedInfo = getEmbedUrl(resource, { autoplay: 0, mute: 0, controls: 1 });
   const thumbnail = getThumbnail(resource.url, resource.thumbnail);
   const platformStyle = getPlatformBadgeStyle(resource.platform);
 
@@ -74,9 +101,44 @@ export default function ResourceDetailPage() {
       </Link>
 
       <article className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
-        {thumbnail && (
+        {/* Video Player / Media Header */}
+        {embedInfo.type === "youtube" ? (
+          <div className="aspect-video w-full overflow-hidden bg-black">
+            <iframe
+              src={embedInfo.url}
+              title={resource.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="h-full w-full border-0"
+            />
+          </div>
+        ) : embedInfo.type === "video" ? (
+          <div className="aspect-video w-full overflow-hidden bg-black">
+            <video
+              src={embedInfo.url}
+              controls
+              playsInline
+              className="h-full w-full object-contain"
+            />
+          </div>
+        ) : thumbnail && !imgError ? (
           <div className="aspect-video overflow-hidden bg-muted">
-            <img src={thumbnail} alt={resource.title} className="h-full w-full object-cover" loading="lazy" />
+            <img
+              src={thumbnail}
+              alt={resource.title}
+              className="h-full w-full object-cover"
+              onError={() => setImgError(true)}
+              loading="lazy"
+            />
+          </div>
+        ) : (
+          <div className="aspect-video flex items-center justify-center bg-muted/60 p-8 text-center">
+            <div className="flex flex-col items-center gap-2">
+              <span className="rounded-full p-4 bg-primary/10 text-primary">
+                <ExternalLink className="h-8 w-8" />
+              </span>
+              <p className="text-sm font-medium text-foreground">{resource.title}</p>
+            </div>
           </div>
         )}
 
@@ -110,6 +172,9 @@ export default function ResourceDetailPage() {
               href={resource.url}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => {
+                if (user) resourceService.recordView(id).catch(() => {});
+              }}
               className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-primary-foreground"
               style={{ background: "var(--gradient-hero)" }}
             >

@@ -45,6 +45,10 @@ const categorySchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    courseCount: {
+      type: Number,
+      default: 0,
+    },
     status: {
       type: String,
       enum: ["active", "inactive"],

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 
 const QueryCacheContext = createContext(null);
 
@@ -129,25 +129,32 @@ export function useMutation(mutationFn, options = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Store options in a ref so `mutate` callback doesn't re-create when an
+  // inline options object is passed (which would change identity every render)
+  const optionsRef = useRef(options);
+  useEffect(() => {
+    optionsRef.current = options;
+  });
+
   const mutate = useCallback(async (...args) => {
     setLoading(true);
     setError(null);
     try {
       const result = await mutationFn(...args);
       // Invalidate related queries
-      if (options.invalidateKeys) {
-        options.invalidateKeys.forEach((key) => invalidate(key));
+      if (optionsRef.current.invalidateKeys) {
+        optionsRef.current.invalidateKeys.forEach((key) => invalidate(key));
       }
-      if (options.onSuccess) options.onSuccess(result);
+      if (optionsRef.current.onSuccess) optionsRef.current.onSuccess(result);
       return result;
     } catch (err) {
       setError(err);
-      if (options.onError) options.onError(err);
+      if (optionsRef.current.onError) optionsRef.current.onError(err);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [mutationFn, options, invalidate]);
+  }, [mutationFn, invalidate]);
 
   return { mutate, loading, error };
 }

@@ -20,6 +20,25 @@ const errorHandler = (err, req, res, next) => {
       .join(", ");
   }
 
+  // BUG #7 FIX: JWT errors should return 401, not 500
+  if (err.name === "TokenExpiredError") {
+    statusCode = 401;
+    message = "Token has expired, please log in again";
+  }
+
+  if (err.name === "JsonWebTokenError") {
+    statusCode = 401;
+    message = "Invalid token, please log in again";
+  }
+
+  if (statusCode === 500 && process.env.NODE_ENV === "production") {
+    message = "An internal server error occurred";
+  }
+
+  if (statusCode >= 500 && process.env.NODE_ENV !== "test") {
+    console.error(`[Unhandled Error] ${req?.method || ""} ${req?.originalUrl || req?.url || ""}:`, err);
+  }
+
   res.status(statusCode).json({
     success: false,
     message,

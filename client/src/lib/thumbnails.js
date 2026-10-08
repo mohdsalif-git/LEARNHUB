@@ -1,14 +1,75 @@
-export function getYouTubeThumbnail(url) {
+export function extractYouTubeId(url) {
   if (!url) return null;
-  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?#]+)/);
-  if (match && match[1]) {
-    return `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
+  const str = String(url).trim();
+  const match = str.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([^&?#\s]+)/i);
+  return match && match[1] ? match[1] : null;
+}
+
+export function getYouTubeThumbnail(url) {
+  const videoId = extractYouTubeId(url);
+  if (videoId) {
+    return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
   }
   return null;
 }
 
+/**
+ * Returns a YouTube embed URL suitable for preview or full playback
+ */
+export function getYouTubeEmbedUrl(url, { autoplay = 1, mute = 1, controls = 0 } = {}) {
+  const videoId = extractYouTubeId(url);
+  if (videoId) {
+    const params = new URLSearchParams({
+      autoplay: autoplay ? "1" : "0",
+      mute: mute ? "1" : "0",
+      controls: controls ? "1" : "0",
+      playsinline: "1",
+      rel: "0",
+      modestbranding: "1",
+      loop: autoplay ? "1" : "0",
+      playlist: videoId,
+      enablejsapi: "1",
+    });
+    return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+  }
+  return null;
+}
+
+/**
+ * Returns preview configuration for a resource:
+ * - { type: 'youtube', url: '...' }
+ * - { type: 'video', url: '...' }
+ * - { type: null, url: null }
+ */
+export function getEmbedUrl(resource, options = {}) {
+  if (!resource) return { type: null, url: null, videoId: null };
+  const targetUrl = typeof resource === "string" ? resource : resource.url || resource.videoUrl || "";
+  if (!targetUrl) return { type: null, url: null, videoId: null };
+
+  const videoId = extractYouTubeId(targetUrl);
+  if (videoId) {
+    return {
+      type: "youtube",
+      videoId,
+      url: getYouTubeEmbedUrl(targetUrl, options),
+    };
+  }
+
+  // Check for direct video file extensions or patterns
+  const isVideoFile = /\.(mp4|webm|ogg|m4v|mov)(\?.*)?$/i.test(targetUrl) ||
+    /cloudinary\.com\/.*\/video\/upload/i.test(targetUrl);
+
+  if (isVideoFile) {
+    return { type: "video", videoId: null, url: targetUrl };
+  }
+
+  return { type: null, url: null, videoId: null };
+}
+
 export function getThumbnail(url, thumbnail) {
-  if (thumbnail) return thumbnail;
+  if (thumbnail && typeof thumbnail === "string" && thumbnail.trim() !== "") {
+    return thumbnail;
+  }
   return getYouTubeThumbnail(url) || null;
 }
 
