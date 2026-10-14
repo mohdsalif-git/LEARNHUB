@@ -3,38 +3,61 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { CategoryIcon } from "../../components/common/CategoryIcon";
 import { categoryService } from "../../services/categoryService";
-import { categories as fallbackCategories } from "../../lib/data";
+import { Skeleton } from "../../components/ui/Skeleton";
+import { EmptyState } from "../../components/ui/StateComponents";
 
 export default function CategoriesPage() {
-  const [categoryList, setCategoryList] = useState(fallbackCategories);
+  const [categoryList, setCategoryList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    categoryService.getAll()
+    categoryService.getAll({ status: "active" })
       .then((res) => {
-        if (res.data?.categories && res.data.categories.length > 0) {
-          setCategoryList(res.data.categories);
-        }
+        setCategoryList(res.data?.categories || []);
       })
       .catch(() => {
-        // Keep fallback categories
+        setCategoryList([]);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
-  const allCategories = categoryList && categoryList.length > 0 ? categoryList : fallbackCategories;
+  const allCategories = categoryList || [];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <h1 className="text-3xl font-bold text-foreground">All Categories</h1>
       <p className="mt-2 text-sm text-muted-foreground">Browse our curated learning tracks across various topics</p>
 
-      <div className="mt-8">
-        {/* Show hierarchy: main categories first, then sub and topic */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {/* Main categories */}
-          {allCategories
-            .filter((c) => c.type === "main" || !c.type)
-            .slice(0, 8)
-            .map((c) => (
+      {loading ? (
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div key={i} className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 animate-pulse">
+              <Skeleton className="h-14 w-14 rounded-xl shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-3/4 rounded" />
+                <Skeleton className="h-3 w-1/2 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : allCategories.length === 0 ? (
+        <div className="mt-12">
+          <EmptyState
+            type="categories"
+            title="No categories available yet"
+            description="Categories will appear here once configured by administrators."
+          />
+        </div>
+      ) : (
+        <div className="mt-8">
+          {/* Show hierarchy: main categories first, then sub and topic */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {/* Main categories */}
+            {allCategories
+              .filter((c) => c.type === "main" || !c.type)
+              .map((c) => (
               <Link
                 key={c.slug}
                 to={`/categories/${c.slug}`}
@@ -98,6 +121,7 @@ export default function CategoriesPage() {
             ))}
         </div>
       </div>
+      )}
     </div>
   );
 }

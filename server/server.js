@@ -168,6 +168,40 @@ const handlePublicSettings = async (req, res) => {
 app.get("/api/settings/public", handlePublicSettings);
 app.get("/api/public/settings", handlePublicSettings);
 
+// Public platform statistics endpoint (calculates real-time counts from database)
+const handlePublicStats = async (req, res) => {
+  try {
+    const User = (await import("./models/User.js")).default;
+    const Resource = (await import("./models/Resource.js")).default;
+    const Category = (await import("./models/Category.js")).default;
+
+    const [totalUsers, totalResources, totalCategories, platformDistinct] = await Promise.all([
+      User.countDocuments(),
+      Resource.countDocuments({ status: "approved" }),
+      Category.countDocuments({ status: "active" }),
+      Resource.distinct("platform", { status: "approved" }),
+    ]);
+
+    const validPlatforms = (platformDistinct || []).filter(Boolean);
+
+    res.json({
+      success: true,
+      data: {
+        totalResources,
+        totalCategories,
+        totalPlatforms: validPlatforms.length,
+        platforms: validPlatforms,
+        totalLearners: totalUsers,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+app.get("/api/stats/public", handlePublicStats);
+app.get("/api/public/stats", handlePublicStats);
+
 // Public team endpoint (no auth needed)
 app.get("/api/public/team", async (req, res) => {
   try {

@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, CheckCircle, AlertCircle } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { resourceService } from "../../services/resourceService";
-import { categories } from "../../lib/data";
+import { categoryService } from "../../services/categoryService";
 import toast from "react-hot-toast";
 
 export default function SharePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [categoriesList, setCategoriesList] = useState([]);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -22,6 +23,12 @@ export default function SharePage() {
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    categoryService.getAll({ status: "active" })
+      .then((res) => setCategoriesList(res.data?.categories || []))
+      .catch(() => setCategoriesList([]));
+  }, []);
 
   function handleChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -86,7 +93,7 @@ export default function SharePage() {
             <label className="text-sm font-medium text-foreground">Category *</label>
             <select name="category" value={form.category} onChange={handleChange} className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring">
               <option value="">Select category</option>
-              {categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+              {categoriesList.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
             </select>
           </div>
           <div>

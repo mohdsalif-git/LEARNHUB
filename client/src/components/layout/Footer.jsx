@@ -1,9 +1,17 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { categories } from "../../lib/data";
+import { categoryService } from "../../services/categoryService";
 import { Github, Twitter, Youtube, Mail, Coffee } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const [topCategories, setTopCategories] = useState([]);
+
+  useEffect(() => {
+    categoryService.getAll({ status: "active" })
+      .then((res) => setTopCategories(res.data?.categories?.slice(0, 8) || []))
+      .catch(() => setTopCategories([]));
+  }, []);
 
   const socialLinks = [
     { href: "https://github.com", icon: Github, label: "GitHub" },
@@ -85,16 +93,20 @@ export function Footer() {
             <li><Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
             <li><Link to="/refund-policy" className="hover:text-foreground transition-colors">Refund Policy</Link></li>
           </ul>
-          <h3 className="mt-8 text-sm font-semibold text-foreground">Top Categories</h3>
-          <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm text-muted-foreground" role="list">
-            {categories.slice(0, 8).map((c) => (
-              <li key={c.slug}>
-                <Link to={`/categories/${c.slug}`} className="hover:text-foreground transition-colors truncate">
-                  {c.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {topCategories.length > 0 && (
+            <>
+              <h3 className="mt-8 text-sm font-semibold text-foreground">Top Categories</h3>
+              <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm text-muted-foreground" role="list">
+                {topCategories.map((c) => (
+                  <li key={c.slug}>
+                    <Link to={`/categories/${c.slug}`} className="hover:text-foreground transition-colors truncate">
+                      {c.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       </div>
       <div className="border-t border-border">

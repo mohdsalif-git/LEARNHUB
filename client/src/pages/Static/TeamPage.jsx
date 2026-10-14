@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { team as defaultTeam } from "../../lib/data";
 import { contentService } from "../../services/contentService";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { SectionHeader } from "../../components/common/SectionHeader";
+import { EmptyState } from "../../components/ui/StateComponents";
 import { Github, Twitter, Linkedin, Globe } from "lucide-react";
 
 export default function TeamPage() {
@@ -13,13 +13,11 @@ export default function TeamPage() {
     async function loadTeam() {
       try {
         const res = await contentService.getTeam();
-        if (res.data?.members && res.data.members.length > 0) {
+        if (res.data?.members) {
           setMembers(res.data.members);
-        } else {
-          setMembers(defaultTeam);
         }
       } catch {
-        setMembers(defaultTeam);
+        setMembers([]);
       } finally {
         setLoading(false);
       }
@@ -40,6 +38,14 @@ export default function TeamPage() {
           {[1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-44 rounded-2xl" />
           ))}
+        </div>
+      ) : members.length === 0 ? (
+        <div className="mt-12">
+          <EmptyState
+            type="users"
+            title="No team members listed yet"
+            description="Team members will appear here once added in the administrative settings."
+          />
         </div>
       ) : (
         <div className="mt-8 grid gap-6 sm:grid-cols-2">
