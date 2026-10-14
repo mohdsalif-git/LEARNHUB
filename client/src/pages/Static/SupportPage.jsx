@@ -99,11 +99,10 @@ export default function SupportPage() {
               key={a}
               type="button"
               onClick={() => { setAmount(a); setCustomAmount(""); }}
-              className={`rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all ${
-                amount === a && !customAmount
+              className={`rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all ${amount === a && !customAmount
                   ? "border-primary bg-primary/10 text-primary"
                   : "border-border text-foreground hover:border-primary/40"
-              }`}
+                }`}
             >
               ₹{a}
             </button>

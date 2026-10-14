@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { resourceService } from "../../services/resourceService";
 import { CategoryIcon } from "../../components/common/CategoryIcon";
-import { categories } from "../../lib/data";
+import { categoryService } from "../../services/categoryService";
 import { ResourceCard } from "../../components/resources/ResourceCard";
 import { Button } from "../../components/ui/Button";
 import { EmptyState, LoadingState } from "../../components/ui/StateComponents";
@@ -17,20 +17,20 @@ export default function CategoryDetailPage() {
 
   useEffect(() => {
     setLoading(true);
-    resourceService.getAll({ category: slug })
-      .then((res) => {
-        setResources(res.data.resources);
-        const localCategory = categories.find((c) => c.slug === slug);
-        if (localCategory) {
-          setCategory(localCategory);
+    Promise.allSettled([
+      categoryService.getBySlug(slug),
+      resourceService.getAll({ category: slug }),
+    ])
+      .then(([catRes, resRes]) => {
+        if (catRes.status === "fulfilled" && catRes.value.data?.category) {
+          setCategory(catRes.value.data.category);
         } else {
-          setCategory({ slug, name: slug.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase()) });
+          setCategory({ slug, name: slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) });
         }
-      })
-      .catch(() => {
-        const localCategory = categories.find((c) => c.slug === slug);
-        if (localCategory) {
-          setCategory(localCategory);
+        if (resRes.status === "fulfilled" && resRes.value.data?.resources) {
+          setResources(resRes.value.data.resources);
+        } else {
+          setResources([]);
         }
       })
       .finally(() => setLoading(false));

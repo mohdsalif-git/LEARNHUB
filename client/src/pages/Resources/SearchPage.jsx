@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, Filter, X } from "lucide-react";
 import { ResourceCard } from "../../components/resources/ResourceCard";
 import { resourceService } from "../../services/resourceService";
-import { categories } from "../../lib/data";
+import { categoryService } from "../../services/categoryService";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../../components/ui/Select";
@@ -14,10 +14,17 @@ export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [resources, setResources] = useState([]);
+  const [categoriesList, setCategoriesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("");
   const [level, setLevel] = useState("");
   const [sort, setSort] = useState("");
+
+  useEffect(() => {
+    categoryService.getAll({ status: "active" })
+      .then((res) => setCategoriesList(res.data?.categories || []))
+      .catch(() => setCategoriesList([]));
+  }, []);
 
   const fetchResources = useCallback(async (searchQuery) => {
     setLoading(true);
@@ -96,7 +103,7 @@ export default function SearchPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">All Categories</SelectItem>
-            {categories.map((c) => (
+            {categoriesList.map((c) => (
               <SelectItem key={c.slug} value={c.slug}>
                 {c.name}
               </SelectItem>
