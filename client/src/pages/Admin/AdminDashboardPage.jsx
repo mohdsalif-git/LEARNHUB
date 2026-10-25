@@ -126,7 +126,7 @@ export default function AdminDashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Overview of your LearnHub platform</p>
+          <p className="mt-1 text-sm text-muted-foreground">Overview of your Wingly platform</p>
         </div>
         <div className="flex gap-2">
           <Link to="/admin/categories">

@@ -4,7 +4,7 @@ const settingSchema = new mongoose.Schema(
   {
     platformName: {
       type: String,
-      default: "LearnHub",
+      default: "Wingly",
       trim: true,
     },
     platformDescription: {
@@ -14,12 +14,12 @@ const settingSchema = new mongoose.Schema(
     },
     supportEmail: {
       type: String,
-      default: "support@learnhub.dev",
+      default: "support@wingly.dev",
       trim: true,
     },
     buyMeACoffeeUrl: {
       type: String,
-      default: "https://buymeacoffee.com/learnhub",
+      default: "https://buymeacoffee.com/wingly",
       trim: true,
     },
     allowUserSubmissions: {
@@ -47,12 +47,12 @@ const settingSchema = new mongoose.Schema(
     },
     footerText: {
       type: String,
-      default: "LearnHub is a community-driven curated directory of high quality free learning resources.",
+      default: "Wingly is a community-driven curated directory of high quality free learning resources.",
       trim: true,
     },
     contactEmail: {
       type: String,
-      default: "contact@learnhub.dev",
+      default: "contact@wingly.dev",
       trim: true,
     },
     socialLinks: {

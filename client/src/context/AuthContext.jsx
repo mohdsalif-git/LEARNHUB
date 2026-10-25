@@ -169,6 +169,26 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const loginWithGoogle = async (credential) => {
+    setError(null);
+    try {
+      const res = await authService.googleAuth(credential);
+      localStorage.setItem("learnhub_token", res.data.token);
+      setUser(res.data.user);
+      if (res.data.expiresAt) {
+        setTokenExpiry(res.data.expiresAt);
+      }
+      setAuthLoading(false);
+      return res;
+    } catch (err) {
+      setUser(null);
+      setAuthLoading(false);
+      setError(err.message || "Google sign-in failed");
+      toast.error(err.message || "Google sign-in failed");
+      throw err;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("learnhub_token");
     setUser(null);
@@ -220,6 +240,7 @@ export function AuthProvider({ children }) {
         isAuthenticated,
         isUnauthenticated,
         login,
+        loginWithGoogle,
         register,
         logout,
         isAdmin,

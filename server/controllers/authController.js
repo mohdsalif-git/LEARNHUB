@@ -1,7 +1,10 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 import { sendInternalError } from "../utils/errorResponse.js";
+
+const getGoogleClient = () => new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const registerUser = async (req, res) => {
   try {
@@ -60,6 +63,11 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
+    // Reject Google-only accounts trying to use password login
+    if (user.authProvider === "google" && !user.password) {
+      return res.status(401).json({ success: false, message: "This account uses Google sign-in. Please continue with Google." });
+    }
+
     if (!user.password) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
@@ -107,4 +115,76 @@ const getMe = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, getMe };
+const googleAuth = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({ success: false, message: "Google credential is required" });
+    }
+
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      return res.status(500).json({ success: false, message: "Google authentication is not configured on this server" });
+    }
+
+    // Verify the ID token server-side — never trust the frontend
+    let payload;
+    try {
+      const client = getGoogleClient();
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+    } catch {
+      return res.status(401).json({ success: false, message: "Invalid or expired Google token. Please try signing in again." });
+    }
+
+    // Reject unverified email addresses
+    if (!payload.email_verified) {
+      return res.status(401).json({ success: false, message: "Your Google account email is not verified. Please verify your email with Google and try again." });
+    }
+
+    const { sub: googleId, email, name, picture } = payload;
+    const cleanEmail = email.toLowerCase();
+
+    // Look up user by googleId first, then by email (for linking)
+    let user = await User.findOne({ googleId });
+
+    if (!user) {
+      // Check if a local account exists with the same verified email
+      user = await User.findOne({ email: cleanEmail });
+
+      if (user) {
+        // Link the existing local account to the Google account
+        user.googleId = googleId;
+        if (!user.avatar) {
+          user.avatar = picture || "";
+        }
+        await user.save();
+      } else {
+        // Create a brand-new Google account
+        user = await User.create({
+          name: name || cleanEmail,
+          email: cleanEmail,
+          googleId,
+          authProvider: "google",
+          avatar: picture || "",
+        });
+      }
+    }
+
+    const token = generateToken(user._id);
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    res.json({
+      success: true,
+      message: "Google sign-in successful",
+      data: { user, token, expiresAt },
+    });
+  } catch (error) {
+    sendInternalError(res, error, "Google authentication failed");
+  }
+};
+
+export { registerUser, loginUser, getMe, googleAuth };

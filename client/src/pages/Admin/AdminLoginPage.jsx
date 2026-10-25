@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
+import { Logo } from "../../components/common/Logo";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -42,6 +43,9 @@ export default function AdminLoginPage() {
     <div className="flex min-h-[70vh] items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
+          <div className="mb-4">
+            <Logo imgClassName="h-9 w-auto" />
+          </div>
           <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
           <p className="mt-1 text-sm text-muted-foreground">Access the admin dashboard</p>
 

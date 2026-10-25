@@ -6,6 +6,7 @@ import { PageShell } from "./components/layout/PageShell";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { Skeleton } from "./components/ui/Skeleton";
+import { Logo } from "./components/common/Logo";
 import LoginPage from "./pages/Auth/LoginPage";
 import SignupPage from "./pages/Auth/SignupPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -99,9 +100,9 @@ function GuestRoute({ children }) {
 function LoadingScreen() {
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <p className="mt-3 text-sm text-muted-foreground">Loading...</p>
+      <div className="text-center space-y-4">
+        <Logo to="" priority={true} imgClassName="h-10 w-auto mx-auto" />
+        <div className="mx-auto h-7 w-7 animate-spin rounded-full border-3 border-primary border-t-transparent" />
       </div>
     </div>
   );
@@ -166,7 +167,17 @@ function AppRoutes() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <Toaster position="top-right" />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "hsl(var(--card))",
+            color: "hsl(var(--card-foreground))",
+            border: "1px solid hsl(var(--border))",
+            boxShadow: "var(--shadow-elevated)",
+          },
+        }}
+      />
       <AppRoutes />
     </ErrorBoundary>
   );

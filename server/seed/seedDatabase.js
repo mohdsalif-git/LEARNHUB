@@ -11,6 +11,9 @@ import Category from "../models/Category.js";
 import Resource from "../models/Resource.js";
 import Feedback from "../models/Feedback.js";
 
+// Category seed data.
+// Rule: keep `description` to one short phrase (≤ 70 chars) for display.
+// Put long search keyword lists in the separate `keywords` field only.
 const seedCategories = [
   { name: "Web Development", slug: "web-development", description: "HTML, CSS, React, Next.js and full-stack frameworks.", icon: "laptop-code", color: "oklch(0.55 0.22 285)", type: "main", displayOrder: 1, featured: true },
   { name: "Python", slug: "python", description: "Learn Python from beginner basics to advanced projects.", icon: "code", color: "oklch(0.7 0.18 155)", type: "main", displayOrder: 2, featured: true },
@@ -28,6 +31,12 @@ const seedCategories = [
   { name: "School & Academic", slug: "academic", description: "Math, science and school subjects.", icon: "graduation-cap", color: "oklch(0.6 0.18 180)", type: "main", displayOrder: 14 },
   { name: "Interview Preparation", slug: "interview-prep", description: "DSA, system design and mock interviews.", icon: "user-tie", color: "oklch(0.7 0.18 100)", type: "main", displayOrder: 15 },
   { name: "Certification Prep", slug: "certifications", description: "AWS, GCP, PMP and other certifications.", icon: "certificate", color: "oklch(0.7 0.17 70)", type: "main", displayOrder: 16 },
+  {
+    name: "Nutrition And Dietetics", slug: "nutrition-dietetics",
+    description: "Nutrition, dietetics and healthy eating.",
+    keywords: "Nutrition, Dietetics, Healthy Eating, Balanced Diet, Medical Nutrition Therapy, Clinical Nutrition, Public Health, Sports Nutrition, Macronutrients, Micronutrients, Meal Planning, Diet Plan, Food Science, Wellness, Healthy Lifestyle, Weight Management, Gut Health, Dietitian Life, Nutrition Education, Evidence Based Nutrition",
+    icon: "apple-whole", color: "oklch(0.68 0.19 155)", type: "main", displayOrder: 17,
+  },
 ];
 
 const seedResources = [

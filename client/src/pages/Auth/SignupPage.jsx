@@ -6,6 +6,9 @@ import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../../components/ui/Card";
 import { toast } from "react-hot-toast";
+import { GoogleAuthButton } from "../../components/auth/GoogleAuthButton";
+import { Logo } from "../../components/common/Logo";
+import { AuthLayout } from "../../components/auth/AuthLayout";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -51,19 +54,22 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md animate-fade-up">
-        <Card>
-          <CardHeader className="text-center">
+    <AuthLayout>
+      <div className="animate-fade-up">
+        <Card className="rounded-3xl p-0 sm:p-0">
+          <CardHeader className="text-center px-6 pt-6 sm:px-8 sm:pt-8">
+            <div className="flex justify-center pb-2">
+              <Logo imgClassName="h-12 w-auto" to={null} showMarkOnSmall={false} />
+            </div>
             <CardTitle className="text-2xl">
               Create your account
             </CardTitle>
             <CardDescription>
-              Join LearnHub and start learning for free
+              Join Wingly and start learning for free
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="px-6 sm:px-8">
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
                 id="signup-name"
@@ -137,9 +143,11 @@ export default function SignupPage() {
                 Create account
               </Button>
             </form>
+
+            <GoogleAuthButton mode="signup" />
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-3">
+          <CardFooter className="flex flex-col gap-3 px-6 pb-6 sm:px-8 sm:pb-8">
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link
@@ -158,6 +166,6 @@ export default function SignupPage() {
           </CardFooter>
         </Card>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

@@ -37,15 +37,15 @@ export default function AdminSettingsPage() {
 
   // Platform General Settings matching Task 1 requirements
   const [settings, setSettings] = useState({
-    platformName: "LearnHub",
+    platformName: "Wingly",
     platformDescription: "",
     logo: "",
     heroTitle: "Find the Best Free Learning Resources in One Place",
     heroSubtitle: "Search free videos, tutorials and courses from YouTube, Edureka, Google, freeCodeCamp and more — organized for faster learning.",
-    footerText: "LearnHub is a community-driven curated directory of high quality free learning resources.",
-    contactEmail: "contact@learnhub.dev",
-    supportEmail: "support@learnhub.dev",
-    buyMeACoffeeUrl: "https://buymeacoffee.com/learnhub",
+    footerText: "Wingly is a community-driven curated directory of high quality free learning resources.",
+    contactEmail: "contact@wingly.dev",
+    supportEmail: "support@wingly.dev",
+    buyMeACoffeeUrl: "https://buymeacoffee.com/wingly",
     allowUserSubmissions: true,
     requireApprovalForSubmissions: true,
     socialLinks: {
@@ -77,14 +77,14 @@ export default function AdminSettingsPage() {
         if (res.data?.settings) {
           const s = res.data.settings;
           setSettings({
-            platformName: s.platformName || "LearnHub",
+            platformName: s.platformName || "Wingly",
             platformDescription: s.platformDescription || "",
             logo: s.logo || "",
             heroTitle: s.heroTitle || "Find the Best Free Learning Resources in One Place",
             heroSubtitle: s.heroSubtitle || "Search free videos, tutorials and courses from YouTube, Edureka, Google, freeCodeCamp and more — organized for faster learning.",
-            footerText: s.footerText || "LearnHub is a community-driven curated directory of high quality free learning resources.",
-            contactEmail: s.contactEmail || "contact@learnhub.dev",
-            supportEmail: s.supportEmail || "support@learnhub.dev",
+            footerText: s.footerText || "Wingly is a community-driven curated directory of high quality free learning resources.",
+            contactEmail: s.contactEmail || "contact@wingly.dev",
+            supportEmail: s.supportEmail || "support@wingly.dev",
             buyMeACoffeeUrl: s.buyMeACoffeeUrl || "",
             allowUserSubmissions: s.allowUserSubmissions ?? true,
             requireApprovalForSubmissions: s.requireApprovalForSubmissions ?? true,
@@ -216,7 +216,7 @@ export default function AdminSettingsPage() {
                     <Input
                       value={settings.platformName}
                       onChange={(e) => setSettings({ ...settings, platformName: e.target.value })}
-                      placeholder="e.g. LearnHub"
+                      placeholder="e.g. Wingly"
                       required
                     />
                   </div>
@@ -298,7 +298,7 @@ export default function AdminSettingsPage() {
                       type="email"
                       value={settings.contactEmail}
                       onChange={(e) => setSettings({ ...settings, contactEmail: e.target.value })}
-                      placeholder="contact@learnhub.dev"
+                      placeholder="contact@wingly.dev"
                     />
                   </div>
                   <div>
@@ -309,7 +309,7 @@ export default function AdminSettingsPage() {
                       type="email"
                       value={settings.supportEmail}
                       onChange={(e) => setSettings({ ...settings, supportEmail: e.target.value })}
-                      placeholder="support@learnhub.dev"
+                      placeholder="support@wingly.dev"
                     />
                   </div>
                   <div>

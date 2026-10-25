@@ -31,6 +31,9 @@ const DEFAULT_HOW_STEPS = [
   { number: "04", title: "Save & Share", description: "Bookmark resources and share great finds with the community.", displayOrder: 3 },
 ];
 
+// Category seed data.
+// Rule: keep `description` to one short phrase (≤ 70 chars) for display.
+// Put long search keyword lists in the separate `keywords` field only.
 const DEFAULT_CATEGORIES = [
   { name: "Web Development", slug: "web-development", description: "HTML, CSS, React, Next.js and full-stack frameworks.", icon: "laptop-code", color: "oklch(0.55 0.22 285)", type: "main", displayOrder: 0, featured: true, courseCount: 120 },
   { name: "Programming", slug: "programming", description: "Core programming concepts, algorithms and data structures.", icon: "code", color: "oklch(0.7 0.18 155)", type: "main", displayOrder: 1, featured: true, courseCount: 95 },
@@ -44,6 +47,12 @@ const DEFAULT_CATEGORIES = [
   { name: "Career Development", slug: "career-development", description: "Interview prep, resume writing and job search strategies.", icon: "user-tie", color: "oklch(0.7 0.18 100)", type: "main", displayOrder: 9, courseCount: 35 },
   { name: "Graphic Design", slug: "graphic-design", description: "Visual design, typography and branding.", icon: "palette", color: "oklch(0.7 0.18 20)", type: "main", displayOrder: 10, courseCount: 42 },
   { name: "Soft Skills", slug: "soft-skills", description: "Communication, leadership and personal development.", icon: "users", color: "oklch(0.62 0.14 310)", type: "main", displayOrder: 11, courseCount: 30 },
+  {
+    name: "Nutrition And Dietetics", slug: "nutrition-dietetics",
+    description: "Nutrition, dietetics and healthy eating.",
+    keywords: "Nutrition, Dietetics, Healthy Eating, Balanced Diet, Medical Nutrition Therapy, Clinical Nutrition, Public Health, Sports Nutrition, Macronutrients, Micronutrients, Meal Planning, Diet Plan, Food Science, Wellness, Healthy Lifestyle, Weight Management, Gut Health, Dietitian Life, Nutrition Education, Evidence Based Nutrition",
+    icon: "apple-whole", color: "oklch(0.68 0.19 155)", type: "main", displayOrder: 12, courseCount: 20,
+  },
 ];
 
 export async function seedContentDefaults() {

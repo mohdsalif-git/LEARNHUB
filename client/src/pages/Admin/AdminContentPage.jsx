@@ -27,7 +27,7 @@ export default function AdminContentPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Site Content &amp; Sections</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Edit Our Team, "Why LearnHub" marquee cards, and "How It Works" steps
+            Edit Our Team, "Why Wingly" marquee cards, and "How It Works" steps
           </p>
         </div>
       </div>
@@ -52,7 +52,7 @@ export default function AdminContentPage() {
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Sparkles className="h-4 w-4" /> "Why LearnHub" Cards
+          <Sparkles className="h-4 w-4" /> "Why Wingly" Cards
         </button>
         <button
           onClick={() => setActiveTab("how")}
@@ -411,7 +411,7 @@ function WhyCardsManager() {
       const res = await adminService.getWhyCardsAdmin();
       setCards(res.data?.cards || []);
     } catch {
-      toast.error("Failed to load Why LearnHub cards");
+      toast.error("Failed to load Why Wingly cards");
     } finally {
       setLoading(false);
     }
@@ -485,7 +485,7 @@ function WhyCardsManager() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">Why LearnHub Cards ({cards.length})</h2>
+        <h2 className="text-lg font-semibold text-foreground">Why Wingly Cards ({cards.length})</h2>
         <Button onClick={() => { resetForm(); setShowForm(true); }} className="inline-flex items-center gap-1.5">
           <Plus className="h-4 w-4" /> Add Card
         </Button>
@@ -610,7 +610,7 @@ function WhyCardsManager() {
       {/* Delete Dialog */}
       {deleteTarget && (
         <DeleteModal
-          title="Delete Why LearnHub Card"
+          title="Delete Why Wingly Card"
           description={`Are you sure you want to delete "${deleteTarget.title}"?`}
           onConfirm={confirmDelete}
           onCancel={() => setDeleteTarget(null)}

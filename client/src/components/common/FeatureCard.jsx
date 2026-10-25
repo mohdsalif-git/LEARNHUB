@@ -16,7 +16,7 @@ export function FeatureCard({ icon, title, description, className, ...props }) {
   return (
     <article
       className={cn(
-        "group relative flex flex-col justify-between rounded-2xl border border-border bg-white p-6",
+        "group relative flex flex-col justify-between rounded-2xl border border-border bg-card p-6",
         "shadow-[var(--shadow-card)] transition-all duration-300",
         "hover:-translate-y-1.5 hover:shadow-[var(--shadow-float)] hover:border-primary/20",
         "min-w-[280px] max-w-[340px] shrink-0 cursor-default",

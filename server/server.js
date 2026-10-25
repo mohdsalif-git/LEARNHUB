@@ -117,7 +117,7 @@ app.use(
 );
 
 app.get("/api/health", (req, res) => {
-  res.json({ success: true, message: "LearnHub API is running" });
+  res.json({ success: true, message: "Wingly API is running" });
 });
 
 // Ensure database is connected before handling requests
@@ -261,7 +261,7 @@ if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
     // Seed default content if collections are empty
     await seedContentDefaults();
     const server = app.listen(PORT, () => {
-      console.log(`LearnHub server running on port ${PORT}`);
+      console.log(`Wingly server running on port ${PORT}`);
     });
 
     const shutdown = () => {

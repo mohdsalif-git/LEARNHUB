@@ -313,12 +313,8 @@ export default function HomePage() {
           HERO SECTION
           ══════════════════════════════════════════════════════════════════ */}
       <section
-        className="relative overflow-hidden"
+        className="relative overflow-x-clip hero-bg"
         aria-labelledby="hero-heading"
-        style={{
-          background: "linear-gradient(160deg, hsl(248 60% 98%) 0%, hsl(245 55% 96%) 40%, hsl(240 50% 97%) 100%)",
-          minHeight: "calc(100vh - 80px)",
-        }}
       >
         {/* Subtle grid texture */}
         <div className="pointer-events-none absolute inset-0 bg-grid opacity-60" aria-hidden="true" />
@@ -334,7 +330,7 @@ export default function HomePage() {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-[1fr_380px] gap-8 items-center min-h-[calc(100vh-80px)] py-16 lg:py-24">
+          <div className="grid lg:grid-cols-[1fr_380px] gap-8 items-center min-h-svh pt-28 pb-16 lg:pb-24">
 
             {/* ── LEFT: Content ─────────────────────────────────────────── */}
             <div ref={heroRef} className="reveal-on-scroll max-w-2xl">
@@ -367,7 +363,7 @@ export default function HomePage() {
               {/* Search bar */}
               <form
                 onSubmit={handleSearch}
-                className="mt-8 flex items-center gap-2 rounded-2xl border border-border bg-white px-4 py-2 shadow-[var(--shadow-elevated)] search-glow max-w-xl transition-all duration-200"
+                className="mt-8 flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2 shadow-[var(--shadow-elevated)] search-glow max-w-xl transition-all duration-200"
                 role="search"
               >
                 <Search className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -397,7 +393,7 @@ export default function HomePage() {
                     <Link
                       key={topic}
                       to={`/search?q=${encodeURIComponent(topic)}`}
-                      className="rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-foreground transition-all duration-150 hover:border-primary/40 hover:bg-primary/5 hover:text-primary shadow-[var(--shadow-xs)]"
+                      className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground transition-all duration-150 hover:border-primary/40 hover:bg-primary/5 hover:text-primary shadow-[var(--shadow-xs)]"
                     >
                       {topic}
                     </Link>
@@ -416,7 +412,7 @@ export default function HomePage() {
                 </Link>
                 <Link
                   to="/share"
-                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-white px-6 py-3 text-sm font-semibold text-foreground shadow-[var(--shadow-xs)] hover:bg-muted/60 hover:-translate-y-0.5 transition-all duration-200"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground shadow-[var(--shadow-xs)] hover:bg-muted/60 hover:-translate-y-0.5 transition-all duration-200"
                 >
                   <Share2 className="h-4 w-4 text-primary" /> Share a Resource
                 </Link>
@@ -507,7 +503,7 @@ export default function HomePage() {
               {heroPillTags.map((tag, i) => (
                 <div
                   key={tag}
-                  className="absolute left-0 rounded-full border border-primary/20 bg-white/80 px-3 py-1 text-xs font-medium text-primary shadow-sm animate-float-slow backdrop-blur-sm"
+                  className="absolute left-0 rounded-full border border-primary/20 bg-card/80 px-3 py-1 text-xs font-medium text-primary shadow-sm animate-float-slow backdrop-blur-sm"
                   style={{
                     top: `${20 + i * 20}%`,
                     animationDelay: `${i * 0.5}s`,
@@ -525,7 +521,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════════════════════════
           LIVE STATISTICS SECTION (100% Real Application Data)
           ══════════════════════════════════════════════════════════════════ */}
-      <section className="py-6 bg-white border-y border-border" aria-labelledby="stats-heading">
+      <section className="py-6 bg-card border-y border-border" aria-labelledby="stats-heading">
         <h2 id="stats-heading" className="sr-only">Platform statistics</h2>
         <div ref={statsRef} className="reveal-on-scroll mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {statsError ? (
@@ -589,13 +585,13 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
-          WHY LEARNHUB — Features (Real content from DB, guest only)
+          WHY WINGLY — Features (Real content from DB, guest only)
           ══════════════════════════════════════════════════════════════════ */}
       {showGuestSections && (
-        <section className="py-16 sm:py-24 overflow-hidden bg-white" aria-labelledby="value-heading">
+        <section className="py-16 sm:py-24 overflow-hidden bg-background" aria-labelledby="value-heading">
           <div ref={featuresRef} className="reveal-on-scroll mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-10">
             <SectionHeaderPremium
-              eyebrow="WHY LEARNHUB"
+              eyebrow="WHY WINGLY"
               title="Everything you need to learn "
               highlightWord="anything"
               description="Curated high-quality free resources from top platforms, organized by topic and skill level."
@@ -616,7 +612,7 @@ export default function HomePage() {
               </div>
             </div>
           ) : whyCards.length > 0 ? (
-            <div className="overflow-hidden w-full" aria-label="Why LearnHub features">
+            <div className="overflow-hidden w-full" aria-label="Why Wingly features">
               <div className="marquee-track flex gap-5 pl-4 py-2">
                 {whyCards.map((item, index) => (
                   <FeatureCard key={item._id || item.title || index} icon={item.icon} title={item.title} description={item.description} />
@@ -633,7 +629,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════════════════════════
           FEATURED RESOURCES (Real approved resources with featured=true)
           ══════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-24" style={{ background: "hsl(248 60% 98%)" }} aria-labelledby="featured-heading">
+      <section className="py-16 sm:py-24 bg-background" aria-labelledby="featured-heading">
         <div ref={featuredRef} className="reveal-on-scroll mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeaderPremium
             eyebrow="FEATURED CONTENT"
@@ -678,7 +674,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════════════════════════
           CATEGORY CAROUSEL (Real categories from database)
           ══════════════════════════════════════════════════════════════════ */}
-      <div className="bg-white">
+      <div className="bg-background">
         {loadingCategories ? (
           <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-4">
@@ -704,7 +700,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════════════════════════
           VIDEO LEARNING (Real video resources from database)
           ══════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-24" style={{ background: "hsl(248 60% 98%)" }} aria-labelledby="videos-heading">
+      <section className="py-16 sm:py-24 bg-background" aria-labelledby="videos-heading">
         <div ref={videosRef} className="reveal-on-scroll mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeaderPremium
             eyebrow="VIDEO LEARNING"
@@ -741,7 +737,7 @@ export default function HomePage() {
           HOW IT WORKS (Real steps from DB, guest only)
           ══════════════════════════════════════════════════════════════════ */}
       {showGuestSections && (
-        <section className="py-16 sm:py-24 bg-white" aria-labelledby="how-heading">
+        <section className="py-16 sm:py-24 bg-background" aria-labelledby="how-heading">
           <div ref={howRef} className="reveal-on-scroll mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionHeaderPremium
               eyebrow="GETTING STARTED"
@@ -761,7 +757,7 @@ export default function HomePage() {
                 {howSteps.map((step, index) => (
                   <article
                     key={step._id || index}
-                    className="group relative rounded-2xl border border-border bg-white p-6 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] hover:border-primary/30 transition-all duration-300"
+                    className="group relative rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-float)] hover:border-primary/30 transition-all duration-300"
                   >
                     <div
                       className="flex h-12 w-12 items-center justify-center rounded-2xl text-white font-bold text-sm shadow-md mb-4 transition-transform duration-300 group-hover:scale-110"
@@ -787,13 +783,13 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════════════════════════
           COMMUNITY FEEDBACK (Real learner reviews from database)
           ══════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-24" style={{ background: "hsl(248 60% 98%)" }} aria-labelledby="feedback-heading">
+      <section className="py-16 sm:py-24 bg-background" aria-labelledby="feedback-heading">
         <div ref={feedbackRef} className="reveal-on-scroll mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeaderPremium
             eyebrow="COMMUNITY REVIEWS"
             title="What learners are "
             highlightWord="saying"
-            description="Real feedback from registered learners using LearnHub."
+            description="Real feedback from registered learners using Wingly."
             action={
               <Link to="/feedback" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline group">
                 View all feedback <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -819,7 +815,7 @@ export default function HomePage() {
               {testimonials.map((f) => (
                 <article
                   key={f._id}
-                  className="group rounded-2xl border border-border bg-white p-6 shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] hover:border-primary/20 transition-all duration-200"
+                  className="group rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] hover:border-primary/20 transition-all duration-200"
                 >
                   <div className="flex gap-0.5 mb-3">
                     {Array.from({ length: f.rating || 5 }).map((_, i) => (
@@ -834,11 +830,11 @@ export default function HomePage() {
                       className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-sm"
                       style={{ background: "var(--gradient-hero)" }}
                     >
-                      {(f.name || "L").charAt(0).toUpperCase()}
+                      {(f.name || "W").charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">{f.name || "Anonymous Learner"}</p>
-                      <p className="text-xs text-muted-foreground">LearnHub Community</p>
+                      <p className="text-xs text-muted-foreground">Wingly Community</p>
                     </div>
                   </figcaption>
                 </article>
@@ -848,7 +844,7 @@ export default function HomePage() {
             <EmptyState
               type="feedback"
               title="No feedback published yet"
-              description="Be the first to share your learning experience on LearnHub."
+              description="Be the first to share your learning experience on Wingly."
               action={{ label: "Share Feedback", variant: "primary", href: "/feedback" }}
             />
           )}
@@ -856,7 +852,7 @@ export default function HomePage() {
           <div className="mt-8 text-center">
             <Link
               to="/feedback"
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-white px-6 py-3 text-sm font-semibold text-foreground shadow-[var(--shadow-xs)] hover:bg-muted/40 hover:-translate-y-0.5 transition-all duration-200"
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground shadow-[var(--shadow-xs)] hover:bg-muted/40 hover:-translate-y-0.5 transition-all duration-200"
             >
               Share Your Feedback <ArrowRight className="h-4 w-4" />
             </Link>
@@ -867,7 +863,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════════════════════════
           CTA SECTION
           ══════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-24 bg-white" aria-labelledby="cta-heading">
+      <section className="py-16 sm:py-24 bg-background" aria-labelledby="cta-heading">
         <div ref={ctaRef} className="reveal-on-scroll mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div
             className="relative overflow-hidden rounded-3xl p-10 sm:p-16 text-white shadow-[var(--shadow-float)]"
@@ -903,12 +899,12 @@ export default function HomePage() {
           TEAM SECTION (Real team from database)
           ══════════════════════════════════════════════════════════════════ */}
       {teamMembers.length > 0 && (
-        <section className="py-16 sm:py-24" style={{ background: "hsl(248 60% 98%)" }} aria-labelledby="team-heading">
+        <section className="py-16 sm:py-24 bg-background" aria-labelledby="team-heading">
           <div ref={teamRef} className="reveal-on-scroll mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionHeaderPremium
               eyebrow="OUR TEAM"
               title="Meet the people "
-              highlightWord="behind LearnHub"
+              highlightWord="behind Wingly"
               description="Dedicated contributors working to keep high-quality education accessible to all."
               action={
                 <Link to="/team" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline group">
@@ -922,7 +918,7 @@ export default function HomePage() {
                 return (
                   <article
                     key={m._id || m.name}
-                    className="group rounded-2xl border border-border bg-white p-6 text-center shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] hover:border-primary/20 transition-all duration-300"
+                    className="group rounded-2xl border border-border bg-card p-6 text-center shadow-[var(--shadow-card)] hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] hover:border-primary/20 transition-all duration-300"
                   >
                     {m.photo ? (
                       <img src={m.photo} alt={m.name} className="mx-auto h-16 w-16 rounded-full object-cover border-2 border-primary/20 shadow-md group-hover:shadow-[var(--shadow-glow-primary)] transition-shadow duration-300" />

@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { Avatar } from "../../components/ui/Avatar";
+import { ThemeToggle } from "../common/ThemeToggle";
+import { Logo } from "../common/Logo";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -78,23 +80,12 @@ export function AdminLayout() {
       >
         {/* Sidebar Header */}
         <div className="flex h-16 items-center justify-between px-3.5 border-b border-border shrink-0">
-          <Link
+          <Logo
             to="/admin/dashboard"
-            className="flex items-center gap-2.5 font-bold tracking-tight min-w-0"
-            aria-label="LearnHub Admin"
-          >
-            <span
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-primary-foreground shadow-sm"
-              style={{ background: "var(--gradient-hero)" }}
-            >
-              <LayoutDashboard className="h-5 w-5 text-white" />
-            </span>
-            {!sidebarCollapsed && (
-              <span className="text-base font-semibold truncate text-foreground">
-                LearnHub Admin
-              </span>
-            )}
-          </Link>
+            markOnly={sidebarCollapsed}
+            showMarkOnSmall={false}
+            imgClassName={sidebarCollapsed ? "h-8 w-8" : "h-8 w-auto"}
+          />
 
           {/* Desktop Collapse Toggle */}
           <Button
@@ -232,6 +223,8 @@ export function AdminLayout() {
                 <ExternalLink className="h-3.5 w-3.5" />
                 View Site
               </Link>
+
+              <ThemeToggle />
 
               <div className="h-5 w-px bg-border hidden sm:block" />
 

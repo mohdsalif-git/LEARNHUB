@@ -30,9 +30,28 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    // Google OAuth fields
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // allows multiple docs with null/undefined googleId
+    },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
   },
   { timestamps: true }
 );
+
+// Password is required only for local accounts
+userSchema.pre("validate", function (next) {
+  if (this.authProvider === "local" && !this.password) {
+    this.invalidate("password", "Password is required for local accounts");
+  }
+  next();
+});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -49,6 +68,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
+  obj.provider = obj.authProvider || "local";
   return obj;
 };
 

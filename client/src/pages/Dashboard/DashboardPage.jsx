@@ -34,7 +34,7 @@ import { cn } from "../../lib/utils";
 import toast from "react-hot-toast";
 
 const DONATION_URL =
-  import.meta.env.VITE_BUY_ME_A_COFFEE_URL || "https://buymeacoffee.com/learnhub";
+  import.meta.env.VITE_BUY_ME_A_COFFEE_URL || "https://buymeacoffee.com/wingly";
 
 export default function DashboardPage() {
   const { user, refreshUser } = useAuth();
@@ -380,7 +380,7 @@ export default function DashboardPage() {
                 <CardContent className="space-y-3">
                   <Bookmark className="h-10 w-10 text-muted-foreground mx-auto" />
                   <p className="text-sm font-medium text-foreground">You haven't saved any resources yet.</p>
-                  <p className="text-xs text-muted-foreground">Bookmark free courses and guides as you explore LearnHub.</p>
+                  <p className="text-xs text-muted-foreground">Bookmark free courses and guides as you explore Wingly.</p>
                   <Link to="/search">
                     <Button variant="outline" size="sm" className="mt-2">
                       Explore Resources
@@ -483,7 +483,7 @@ export default function DashboardPage() {
                 <Coffee className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground">Enjoying LearnHub?</h3>
+                <h3 className="text-sm font-bold text-foreground">Enjoying Wingly?</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Help support the platform and keep free education accessible to everyone.
                 </p>
@@ -671,7 +671,7 @@ export default function DashboardPage() {
               <Eye className="mx-auto h-12 w-12 text-muted-foreground" />
               <h3 className="mt-4 text-base font-semibold text-foreground">No viewing history yet</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                As you open and learn from resources across LearnHub, your history will appear here.
+                As you open and learn from resources across Wingly, your history will appear here.
               </p>
               <Link to="/search" className="mt-4 inline-block">
                 <Button>Explore Catalog</Button>
@@ -687,7 +687,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Account Details</CardTitle>
-              <CardDescription>Your LearnHub account and profile summary</CardDescription>
+              <CardDescription>Your Wingly account and profile summary</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -724,7 +724,7 @@ export default function DashboardPage() {
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               >
                 <Coffee className="h-3.5 w-3.5 text-[color:var(--warning)]" />
-                Support LearnHub
+                Support Wingly
               </a>
             </div>
           </Card>

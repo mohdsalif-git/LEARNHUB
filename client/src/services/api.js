@@ -34,7 +34,8 @@ async function request(endpoint, options = {}) {
   if (!response.ok) {
     const isAuthAttempt =
       normalizedEndpoint.startsWith("/auth/login") ||
-      normalizedEndpoint.startsWith("/auth/register");
+      normalizedEndpoint.startsWith("/auth/register") ||
+      normalizedEndpoint.startsWith("/auth/google");
 
     // Only handle token expiry / auto-logout if a token was actually attached
     // and this is not an invalid credentials attempt on login/register
