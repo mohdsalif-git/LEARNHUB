@@ -15,6 +15,8 @@ import {
   DropdownMenuLabel,
 } from "../../components/ui/DropdownMenu";
 import { Avatar } from "../../components/ui/Avatar";
+import { ThemeToggle, MobileThemeSelector } from "../common/ThemeToggle";
+import { Logo } from "../common/Logo";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -96,13 +98,12 @@ export function Navbar() {
 
   return (
     <header
-      className="sticky top-0 z-50"
+      className="fixed inset-x-0 top-3 z-50 pointer-events-none"
       aria-label="Main header"
     >
       {/* ── Floating glass bar ─────────────────────────────────────────── */}
       <div className={cn(
-        "mx-auto max-w-7xl px-4 pt-3 sm:px-6",
-        scrolled && "pt-2"
+        "mx-auto max-w-7xl px-4 sm:px-6 pointer-events-auto",
       )}>
         <div className={cn(
           "glass-strong rounded-2xl transition-all duration-300",
@@ -113,25 +114,7 @@ export function Navbar() {
           <div className="flex h-14 items-center justify-between gap-4 px-5">
 
             {/* Logo */}
-            <Link
-              to="/"
-              className="flex shrink-0 items-center gap-2.5 font-bold tracking-tight"
-              aria-label="LearnHub Home"
-            >
-              <span
-                className="grid h-8 w-8 place-items-center rounded-xl text-white text-sm shadow-sm"
-                style={{ background: "var(--gradient-hero)" }}
-                aria-hidden="true"
-              >
-                <CategoryIcon icon="graduation-cap" sizePx={15} className="text-white" />
-              </span>
-              <span
-                className="text-lg font-bold tracking-tight"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                LearnHub
-              </span>
-            </Link>
+            <Logo priority={true} />
 
             {/* Desktop nav links */}
             <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary navigation">
@@ -157,6 +140,9 @@ export function Navbar() {
 
             {/* Right-side controls */}
             <div className="flex items-center gap-2">
+              {/* Theme toggle */}
+              <ThemeToggle />
+
               {/* Search shortcut (desktop) */}
               <Link
                 to="/search"
@@ -279,6 +265,13 @@ export function Navbar() {
 
               <div className="my-1 border-t border-border/60" />
 
+              {/* Mobile theme selector */}
+              <div className="px-1 py-1">
+                <MobileThemeSelector />
+              </div>
+
+              <div className="my-1 border-t border-border/60" />
+
               {/* Guest */}
               {mode === "guest" && (
                 <>
@@ -308,9 +301,6 @@ export function Navbar() {
           </div>
         )}
       </div>
-
-      {/* Spacer so content below sticky nav is not obscured */}
-      <div className="h-3" />
     </header>
   );
 }

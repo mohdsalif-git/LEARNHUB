@@ -40,7 +40,7 @@ export default function FeedbackPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <h1 className="text-3xl font-bold text-foreground">Feedback</h1>
-      <p className="mt-2 text-sm text-muted-foreground">We'd love to hear about your experience with LearnHub</p>
+      <p className="mt-2 text-sm text-muted-foreground">We'd love to hear about your experience with Wingly</p>
 
       <form onSubmit={handleSubmit} className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
         <div>

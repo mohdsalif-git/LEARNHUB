@@ -28,9 +28,9 @@ export default function TeamPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 animate-fade-in">
       <SectionHeader
-        eyebrow="PEOPLE BEHIND LEARNHUB"
+        eyebrow="PEOPLE BEHIND WINGLY"
         title="Our Team"
-        description="Meet the creators, curators, and developers building LearnHub."
+        description="Meet the creators, curators, and developers building Wingly."
       />
 
       {loading ? (

@@ -9,8 +9,8 @@ export default function ContactPage() {
         <Mail className="mx-auto h-10 w-10 text-primary" />
         <h2 className="mt-4 text-lg font-semibold text-foreground">Get in touch</h2>
         <p className="mt-2 text-sm text-muted-foreground">Email us at</p>
-        <a href="mailto:hello@learnhub.dev" className="mt-2 inline-block text-sm font-semibold text-primary hover:underline">
-          hello@learnhub.dev
+        <a href="mailto:hello@wingly.dev" className="mt-2 inline-block text-sm font-semibold text-primary hover:underline">
+          hello@wingly.dev
         </a>
       </div>
     </div>

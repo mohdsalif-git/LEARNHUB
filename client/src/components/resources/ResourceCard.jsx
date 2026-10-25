@@ -138,8 +138,8 @@ export function ResourceCard({ resource, bookmarked = false, onBookmarkToggle, v
         "group relative flex flex-col overflow-hidden cursor-pointer",
         "transition-all duration-300",
         isCompact
-          ? "rounded-xl border border-border bg-white shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)]"
-          : "rounded-2xl border border-border bg-white shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-float)] hover:border-primary/20"
+          ? "rounded-xl border border-border bg-card shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)]"
+          : "rounded-2xl border border-border bg-card shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-float)] hover:border-primary/20"
       )}
       style={{ transformStyle: "preserve-3d", willChange: "transform" }}
       aria-label={resource.title}
@@ -159,7 +159,7 @@ export function ResourceCard({ resource, bookmarked = false, onBookmarkToggle, v
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-border shadow-sm text-primary">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card border border-border shadow-sm text-primary">
               <Play className="h-6 w-6 fill-primary" />
             </span>
           </div>
@@ -204,7 +204,7 @@ export function ResourceCard({ resource, bookmarked = false, onBookmarkToggle, v
         <div className="absolute top-3 left-3">
           <Badge
             variant="outline"
-            className="text-[10px] font-bold backdrop-blur-sm border-white/30 bg-white/90 shadow-sm"
+            className="text-[10px] font-bold backdrop-blur-sm border-white/30 bg-white/90 dark:bg-card/90 dark:border-border shadow-sm"
             style={{ color: platformStyle.color }}
           >
             {resource.platform}

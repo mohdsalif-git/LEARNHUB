@@ -325,7 +325,7 @@ export default function AdminAnalyticsPage() {
           <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle className="text-base font-semibold">Top Performing Content</CardTitle>
-              <CardDescription>Most engaged learning resources on LearnHub</CardDescription>
+              <CardDescription>Most engaged learning resources on Wingly</CardDescription>
             </div>
             <div className="flex rounded-lg border border-border bg-muted/40 p-1">
               <button

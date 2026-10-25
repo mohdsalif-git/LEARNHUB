@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { adminService } from "../../services/adminService";
 import toast from "react-hot-toast";
+import { Logo } from "../../components/common/Logo";
 
 export default function AdminSetupPage() {
   const [loading, setLoading] = useState(false);
@@ -26,6 +27,9 @@ export default function AdminSetupPage() {
     <div className="flex min-h-[70vh] items-center justify-center px-4">
       <div className="w-full max-w-md text-center">
         <div className="rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
+          <div className="mb-4 flex justify-center">
+            <Logo imgClassName="h-9 w-auto" />
+          </div>
           <h1 className="text-2xl font-bold text-foreground">Admin Setup</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Claim the first admin role for your account ({user?.email}). This is only available when no admin exists.

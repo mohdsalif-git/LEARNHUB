@@ -62,6 +62,10 @@ const categorySchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    keywords: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

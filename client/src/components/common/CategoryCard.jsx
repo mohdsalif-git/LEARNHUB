@@ -19,7 +19,7 @@ export function CategoryCard({ category, className, ...props }) {
     <Link
       to={`/categories/${slug}`}
       className={cn(
-        "group inline-flex items-center gap-3.5 rounded-2xl border border-border bg-white",
+        "group inline-flex items-center gap-3.5 rounded-2xl border border-border bg-card",
         "px-4 py-3.5 shadow-[var(--shadow-card)]",
         "transition-all duration-300",
         "hover:-translate-y-1 hover:shadow-[var(--shadow-elevated)] hover:border-primary/25",

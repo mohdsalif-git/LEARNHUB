@@ -81,8 +81,8 @@ export default function AuthPage() {
             </CardTitle>
             <CardDescription>
               {isLogin
-                ? "Sign in to your LearnHub account"
-                : "Join LearnHub and start learning for free"}
+                ? "Sign in to your Wingly account"
+                : "Join Wingly and start learning for free"}
             </CardDescription>
           </CardHeader>
 

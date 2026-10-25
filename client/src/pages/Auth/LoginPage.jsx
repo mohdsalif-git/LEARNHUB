@@ -6,6 +6,9 @@ import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../../components/ui/Card";
 import { toast } from "react-hot-toast";
+import { GoogleAuthButton } from "../../components/auth/GoogleAuthButton";
+import { Logo } from "../../components/common/Logo";
+import { AuthLayout } from "../../components/auth/AuthLayout";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -42,19 +45,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md animate-fade-up">
-        <Card>
-          <CardHeader className="text-center">
+    <AuthLayout>
+      <div className="animate-fade-up">
+        <Card className="rounded-3xl p-0 sm:p-0">
+          <CardHeader className="text-center px-6 pt-6 sm:px-8 sm:pt-8">
+            <div className="flex justify-center pb-2">
+              <Logo imgClassName="h-12 w-auto" to={null} showMarkOnSmall={false} />
+            </div>
             <CardTitle className="text-2xl">
               Welcome back
             </CardTitle>
             <CardDescription>
-              Sign in to your LearnHub account
+              Sign in to your Wingly account
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="px-6 sm:px-8">
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
                 id="login-email"
@@ -103,9 +109,11 @@ export default function LoginPage() {
                 Sign in
               </Button>
             </form>
+
+            <GoogleAuthButton mode="login" />
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-3">
+          <CardFooter className="flex flex-col gap-3 px-6 pb-6 sm:px-8 sm:pb-8">
             <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
               <Link
@@ -124,6 +132,6 @@ export default function LoginPage() {
           </CardFooter>
         </Card>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

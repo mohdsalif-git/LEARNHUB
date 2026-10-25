@@ -49,8 +49,8 @@ export default function SupportPage() {
           key: res.data.keyId,
           amount: res.data.razorpayOrder.amount,
           currency: res.data.razorpayOrder.currency,
-          name: "LearnHub",
-          description: "Support LearnHub",
+          name: "Wingly",
+          description: "Support Wingly",
           order_id: res.data.razorpayOrder.id,
           handler: async function (response) {
             try {
@@ -87,7 +87,7 @@ export default function SupportPage() {
         <span className="grid mx-auto h-16 w-16 place-items-center rounded-2xl bg-[color:var(--warning)]/20 text-[color:var(--warning)]">
           <Coffee className="h-8 w-8" />
         </span>
-        <h1 className="mt-4 text-3xl font-bold text-foreground">Support LearnHub</h1>
+        <h1 className="mt-4 text-3xl font-bold text-foreground">Support Wingly</h1>
         <p className="mt-2 text-sm text-muted-foreground">Help us keep this platform free and growing for everyone</p>
       </div>
 

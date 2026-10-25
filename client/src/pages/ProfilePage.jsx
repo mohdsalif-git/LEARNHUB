@@ -31,7 +31,7 @@ import { toast } from "react-hot-toast";
 import { cn } from "../lib/utils";
 
 const DONATION_URL =
-  import.meta.env.VITE_BUY_ME_A_COFFEE_URL || "https://buymeacoffee.com/learnhub";
+  import.meta.env.VITE_BUY_ME_A_COFFEE_URL || "https://buymeacoffee.com/wingly";
 
 export default function ProfilePage() {
   const { user, refreshUser, clearError } = useAuth();
@@ -260,7 +260,7 @@ export default function ProfilePage() {
             <Coffee className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-foreground">Enjoying LearnHub?</h3>
+            <h3 className="text-sm font-bold text-foreground">Enjoying Wingly?</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Help support the platform and keep free education accessible to all.
             </p>
