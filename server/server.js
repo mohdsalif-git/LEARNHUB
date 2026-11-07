@@ -22,6 +22,11 @@ import supportRoutes from "./routes/supportRoutes.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import adminResourceRoutes from "./routes/adminResourceRoutes.js";
+import automationAdminRoutes from "./routes/automationAdminRoutes.js";
+import localizationRoutes from "./routes/localizationRoutes.js";
+import { startAutomationCron } from "./jobs/automationCron.js";
+import { startHealthCheckCron } from "./jobs/healthCheckCron.js";
+import { Server as SocketIOServer } from "socket.io";
 import userRoutes from "./routes/userRoutes.js";
 import Setting from "./models/Setting.js";
 import { seedContentDefaults } from "./seed/seedContentDefaults.js";
@@ -140,6 +145,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/feedback", feedbackRoutes);
+app.use("/api", localizationRoutes);
 
 const handlePublicSettings = async (req, res) => {
   try {
@@ -246,6 +252,7 @@ const adminLimiter = rateLimit({
 app.use("/api/admin", adminLimiter);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin", adminResourceRoutes);
+app.use("/api/admin", automationAdminRoutes);
 
 // Catch-all 404 handler for unmatched routes
 app.use((req, res) => {
@@ -263,6 +270,12 @@ if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
     const server = app.listen(PORT, () => {
       console.log(`Wingly server running on port ${PORT}`);
     });
+
+    // Initialize Socket.io & background automation crons
+    const io = new SocketIOServer(server, { cors: { origin: allowedOrigins, credentials: true } });
+    app.set("io", io);
+    startAutomationCron(io);
+    startHealthCheckCron(io);
 
     const shutdown = () => {
       server.close(() => {

@@ -1,7 +1,8 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, Filter, X } from "lucide-react";
 import { ResourceCard } from "../../components/resources/ResourceCard";
+import LanguageFilterBar from "../../components/resources/LanguageFilterBar";
 import { resourceService } from "../../services/resourceService";
 import { categoryService } from "../../services/categoryService";
 import { Button } from "../../components/ui/Button";
@@ -19,6 +20,7 @@ export default function SearchPage() {
   const [category, setCategory] = useState("");
   const [level, setLevel] = useState("");
   const [sort, setSort] = useState("");
+  const [language, setLanguage] = useState("all");
 
   useEffect(() => {
     categoryService.getAll({ status: "active" })
@@ -34,6 +36,7 @@ export default function SearchPage() {
       if (category) params.category = category;
       if (level) params.level = level;
       if (sort) params.sort = sort;
+      if (language && language !== "all") params.language = language;
       const res = await resourceService.getAll(params);
       setResources(res.data.resources);
     } catch {
@@ -41,7 +44,7 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  }, [category, level, sort]);
+  }, [category, level, sort, language]);
 
   useEffect(() => {
     const q = searchParams.get("q") || "";
@@ -63,15 +66,16 @@ export default function SearchPage() {
 
   useEffect(() => {
     handleFilterChange();
-  }, [category, level, sort]);
+  }, [category, level, sort, language]);
 
   function clearFilters() {
     setCategory("");
     setLevel("");
     setSort("");
+    setLanguage("all");
   }
 
-  const hasFilters = category || level || sort;
+  const hasFilters = category || level || sort || (language && language !== "all");
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -136,6 +140,13 @@ export default function SearchPage() {
             <X className="h-3.5 w-3.5" /> Clear
           </Button>
         )}
+      </div>
+
+      <div className="mt-4">
+        <LanguageFilterBar
+          selectedLanguage={language}
+          onLanguageChange={setLanguage}
+        />
       </div>
 
       <div className="mt-8" role="region" aria-label="Search results" aria-live="polite">
