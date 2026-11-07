@@ -2,6 +2,11 @@ import { api } from "./api";
 
 export const resourceService = {
   getAll: (params = {}) => {
+    // If language is provided, route seamlessly through the localization endpoint
+    if (params.language && params.language !== "all") {
+      const query = new URLSearchParams(params).toString();
+      return api.get(`/localization/resources${query ? `?${query}` : ""}`);
+    }
     const query = new URLSearchParams(params).toString();
     return api.get(`/resources${query ? `?${query}` : ""}`);
   },
