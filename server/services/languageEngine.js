@@ -9,6 +9,7 @@ import https from "https";
 import Resource from "../models/Resource.js";
 import { detectLanguage } from "../utils/languageDetector.js";
 import { classifyDifficulty } from "./automationEngine.js";
+import { fetchYouTubePublic } from "./sources/youtubePublicSource.js";
 
 // ── Localized Multi-Language Query Sets ──────────────────────────────────────
 const LOCALIZED_QUERIES = [
@@ -66,29 +67,48 @@ function fetchJSON(url, headers = {}) {
  */
 export async function ingestMultiLingualYouTube({ maxPerQuery = 3 } = {}) {
   const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) {
-    return { saved: 0, skipped: 0, errors: 0, message: "YOUTUBE_API_KEY not set" };
-  }
-
   let saved = 0, skipped = 0, errors = 0;
 
   for (const { q, lang, domain } of LOCALIZED_QUERIES) {
     try {
-      const url =
-        `https://www.googleapis.com/youtube/v3/search` +
-        `?part=snippet&type=video&videoDuration=medium&videoEmbeddable=true` +
-        `&maxResults=${maxPerQuery}&q=${encodeURIComponent(q)}&key=${apiKey}`;
+      let videos = [];
 
-      const data = await fetchJSON(url);
-      const items = data.items || [];
+      // 1. Try official API if key exists
+      if (apiKey) {
+        try {
+          const url =
+            `https://www.googleapis.com/youtube/v3/search` +
+            `?part=snippet&type=video&videoDuration=medium&videoEmbeddable=true` +
+            `&maxResults=${maxPerQuery}&q=${encodeURIComponent(q)}&key=${apiKey}`;
 
-      for (const item of items) {
-        const videoId = item.id?.videoId;
+          const data = await fetchJSON(url);
+          if (data && !data.error && Array.isArray(data.items)) {
+            videos = data.items.map((item) => ({
+              videoId: item.id?.videoId,
+              title: item.snippet?.title || "Untitled",
+              description: item.snippet?.description || "",
+              thumbnail: item.snippet?.thumbnails?.high?.url || "",
+            }));
+          }
+        } catch {
+          // Fall through
+        }
+      }
+
+      // 2. Fallback to public parser if official API fails or is unconfigured
+      if (videos.length === 0) {
+        const publicItems = await fetchYouTubePublic(q, maxPerQuery);
+        if (publicItems && publicItems.length > 0) {
+          videos = publicItems;
+        }
+      }
+
+      for (const item of videos) {
+        const videoId = item.videoId;
         if (!videoId) { skipped++; continue; }
 
-        const snippet = item.snippet || {};
-        const title = snippet.title || "Untitled";
-        const description = snippet.description || "";
+        const title = item.title || "Untitled";
+        const description = item.description || "";
         const resourceUrl = `https://www.youtube.com/watch?v=${videoId}`;
         const detectedLang = detectLanguage(`${title} ${description}`) || lang;
         const level = classifyDifficulty(`${title} ${description}`);
@@ -100,7 +120,8 @@ export async function ingestMultiLingualYouTube({ maxPerQuery = 3 } = {}) {
           platform: "YouTube",
           category: domain,
           level,
-          thumbnail: snippet.thumbnails?.high?.url || "",
+          language: detectedLang,
+          thumbnail: item.thumbnail || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
           tags: [domain.toLowerCase(), detectedLang.toLowerCase(), "multilingual"],
           rating: 4.0,
           verified: false,
@@ -121,7 +142,7 @@ export async function ingestMultiLingualYouTube({ maxPerQuery = 3 } = {}) {
         else skipped++;
       }
 
-      await new Promise((r) => setTimeout(r, 250));
+      await new Promise((r) => setTimeout(r, 400));
     } catch (_err) {
       errors++;
     }
