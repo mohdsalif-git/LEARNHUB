@@ -29,6 +29,8 @@ import http from "http";
 import Resource from "../models/Resource.js";
 import Category from "../models/Category.js";
 import { scoreResource } from "./qualityScorer.js";
+import { detectLanguage } from "../utils/languageDetector.js";
+import { fetchYouTubePublic } from "./sources/youtubePublicSource.js";
 import { ingestOpenLibrary, setEmitter as setOpenLibraryEmitter } from "./sources/openLibrarySource.js";
 import { ingestWikipedia, setEmitter as setWikiEmitter } from "./sources/wikiSource.js";
 import { ingestArxiv, setEmitter as setArxivEmitter } from "./sources/arxivSource.js";
@@ -278,6 +280,9 @@ function fetchJSON(url, headers = {}) {
 //  CATEGORY RESOLVER
 // ─────────────────────────────────────────────
 
+let _cachedCategories = null;
+let _cachedCategoriesTime = 0;
+
 /**
  * Resolves a category name string to a {categoryName, categoryId} pair.
  * Falls back to "Programming" if no active category matches.
@@ -287,7 +292,12 @@ function fetchJSON(url, headers = {}) {
 export async function resolveCategory(hint = "") {
   try {
     const lower = hint.toLowerCase();
-    const categories = await Category.find({ status: "active" }).select("_id name keywords slug").lean();
+    const now = Date.now();
+    if (!_cachedCategories || now - _cachedCategoriesTime > 300000) {
+      _cachedCategories = await Category.find({ status: "active" }).select("_id name keywords slug").lean();
+      _cachedCategoriesTime = now;
+    }
+    const categories = _cachedCategories || [];
     if (!categories.length) return { categoryName: "General Learning", categoryId: null };
 
     for (const cat of categories) {
@@ -483,15 +493,6 @@ const YOUTUBE_QUERIES = [
  */
 export async function ingestYouTube({ maxPerQuery = 5 } = {}) {
   const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) {
-    emit("automation:activity", {
-      type: "warning",
-      source: "YouTube",
-      message: "YOUTUBE_API_KEY not configured — skipping YouTube ingestion.",
-    });
-    return { saved: 0, skipped: 0, errors: 0 };
-  }
-
   let saved = 0, skipped = 0, errors = 0;
 
   emit("automation:activity", {
@@ -502,43 +503,62 @@ export async function ingestYouTube({ maxPerQuery = 5 } = {}) {
 
   for (const query of YOUTUBE_QUERIES) {
     try {
-      const encodedQuery = encodeURIComponent(query);
-      const url =
-        `https://www.googleapis.com/youtube/v3/search` +
-        `?part=snippet&type=video&videoDuration=medium` +
-        `&videoEmbeddable=true&maxResults=${maxPerQuery}` +
-        `&q=${encodedQuery}&key=${apiKey}`;
+      let videos = [];
 
-      const data = await fetchJSON(url);
+      // 1. Try official YouTube Data API v3 if key exists
+      if (apiKey) {
+        try {
+          const encodedQuery = encodeURIComponent(query);
+          const url =
+            `https://www.googleapis.com/youtube/v3/search` +
+            `?part=snippet&type=video&videoDuration=medium` +
+            `&videoEmbeddable=true&maxResults=${maxPerQuery}` +
+            `&q=${encodedQuery}&key=${apiKey}`;
 
-      if (data.error) {
-        const reason = data.error?.errors?.[0]?.reason || "unknown";
-        const isQuota = reason === "quotaExceeded";
-        emit("automation:activity", {
-          type: isQuota ? "quota_warning" : "error",
-          source: "YouTube",
-          message: isQuota
-            ? `YouTube API quota exceeded — stopping YouTube ingestion for today.`
-            : `YouTube API error for "${query}": ${data.error.message}`,
-        });
-        if (isQuota) return { saved, skipped, errors };
-        errors++;
-        continue;
+          const data = await fetchJSON(url);
+          if (data && !data.error && Array.isArray(data.items)) {
+            videos = data.items.map((item) => ({
+              videoId: item.id?.videoId,
+              title: item.snippet?.title || "Untitled",
+              description: item.snippet?.description || "",
+              thumbnail:
+                item.snippet?.thumbnails?.high?.url ||
+                item.snippet?.thumbnails?.default?.url ||
+                `https://i.ytimg.com/vi/${item.id?.videoId}/hqdefault.jpg`,
+              tags: item.snippet?.tags || [query.split(" ")[0]],
+            }));
+          }
+        } catch {
+          // Fall through to public parser fallback
+        }
       }
 
-      const items = data.items || [];
-      for (const item of items) {
+      // 2. Resilient fallback to YouTube public search parsing (zero API key required)
+      if (videos.length === 0) {
+        const publicItems = await fetchYouTubePublic(query, maxPerQuery);
+        if (publicItems && publicItems.length > 0) {
+          videos = publicItems.map((v) => ({
+            videoId: v.videoId,
+            title: v.title,
+            description: v.description,
+            thumbnail: v.thumbnail,
+            tags: [query.split(" ")[0]],
+          }));
+        }
+      }
+
+      for (const item of videos) {
         try {
-          const videoId = item.id?.videoId;
+          const videoId = item.videoId;
           if (!videoId) { skipped++; continue; }
 
-          const snippet = item.snippet || {};
-          const title = snippet.title || "Untitled";
-          const description = snippet.description || "";
-          const thumbnail = snippet.thumbnails?.high?.url || snippet.thumbnails?.default?.url || "";
+          const title = item.title || "Untitled";
+          const description = item.description || "";
+          const thumbnail = item.thumbnail || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
           const resourceUrl = `https://www.youtube.com/watch?v=${videoId}`;
           const level = classifyDifficulty(`${title} ${description}`);
-          const tags = (snippet.tags || [title.split(" ")[0]]).slice(0, 8);
+          const detectedLang = detectLanguage(`${title} ${description}`) || "English";
+          const tags = (item.tags || [title.split(" ")[0]]).slice(0, 8);
           const { categoryName, categoryId } = await resolveCategory(tags[0] || title);
 
           const rawScore = scoreResource({
@@ -558,6 +578,7 @@ export async function ingestYouTube({ maxPerQuery = 5 } = {}) {
             category: categoryName,
             categoryId,
             level,
+            language: detectedLang,
             thumbnail,
             tags,
             rating: parseFloat(rawScore.toFixed(1)),
@@ -581,6 +602,7 @@ export async function ingestYouTube({ maxPerQuery = 5 } = {}) {
               title,
               url: resourceUrl,
               level,
+              language: detectedLang,
               category: categoryName,
             });
           } else {
@@ -599,16 +621,15 @@ export async function ingestYouTube({ maxPerQuery = 5 } = {}) {
       emit("automation:activity", {
         type: "progress",
         source: "YouTube",
-        message: `Query "${query}" done — ${items.length} items processed.`,
+        message: `Query "${query}" done — ${videos.length} items processed.`,
       });
 
-      // Respect YouTube rate limits — 200 ms between queries
-      await new Promise((r) => setTimeout(r, 200));
+      // Respect rate limits — 400 ms between queries
+      await new Promise((r) => setTimeout(r, 400));
     } catch (queryErr) {
       errors++;
-      const isRateLimit = queryErr.message?.includes("403");
       emit("automation:activity", {
-        type: isRateLimit ? "quota_warning" : "error",
+        type: "error",
         source: "YouTube",
         message: `Query "${query}" failed: ${queryErr.message}`,
       });
