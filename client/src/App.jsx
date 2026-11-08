@@ -42,6 +42,7 @@ const AdminResourcesPage = lazy(() => import("./pages/Admin/AdminResourcesPage")
 const AdminAnalyticsPage = lazy(() => import("./pages/Admin/AdminAnalyticsPage"));
 const AdminSettingsPage = lazy(() => import("./pages/Admin/AdminSettingsPage"));
 const AdminContentPage = lazy(() => import("./pages/Admin/AdminContentPage"));
+const AdminAutomationPage = lazy(() => import("./pages/Admin/AdminAutomationPage"));
 
 function LoadingFallback() {
   return (
@@ -149,6 +150,7 @@ function AppRoutes() {
       <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/dashboard" element={<PageWithSuspense><AdminDashboardPage /></PageWithSuspense>} />
+        <Route path="/admin/automation" element={<PageWithSuspense><AdminAutomationPage /></PageWithSuspense>} />
         <Route path="/admin/members" element={<PageWithSuspense><AdminMembersPage /></PageWithSuspense>} />
         <Route path="/admin/resources" element={<PageWithSuspense><AdminResourcesPage /></PageWithSuspense>} />
         <Route path="/admin/categories" element={<PageWithSuspense><AdminCategoriesPage /></PageWithSuspense>} />

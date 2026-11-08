@@ -113,3 +113,4 @@ export async function fetchYouTubePublic(query, maxResults = 5) {
     return [];
   }
 }
+

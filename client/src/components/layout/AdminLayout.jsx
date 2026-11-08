@@ -18,6 +18,7 @@ import {
   LogOut,
   ExternalLink,
   Sparkles,
+  Cpu,
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { Avatar } from "../../components/ui/Avatar";
@@ -33,6 +34,7 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { name: "Automation", href: "/admin/automation", icon: Cpu },
   { name: "Members", href: "/admin/members", icon: Users },
   { name: "Resources", href: "/admin/resources", icon: BookOpen },
   { name: "Categories", href: "/admin/categories", icon: FolderOpen },

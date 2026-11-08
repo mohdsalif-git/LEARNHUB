@@ -68,4 +68,10 @@ export const adminService = {
   createHowStep: (data) => api.post("/admin/how-steps", data),
   updateHowStep: (id, data) => api.put(`/admin/how-steps/${id}`, data),
   deleteHowStep: (id) => api.delete(`/admin/how-steps/${id}`),
+
+  // ── Resource Ingestion & Automation ──
+  getAutomationStatus: () => api.get("/admin/automation/status"),
+  runAutomation: (data = {}) => api.post("/admin/automation/run", data),
+  runSourceAutomation: (source, data = {}) => api.post(`/admin/automation/run/${source}`, data),
+  runHealthCheck: () => api.post("/admin/automation/health-check"),
 };
